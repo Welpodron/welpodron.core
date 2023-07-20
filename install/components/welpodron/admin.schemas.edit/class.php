@@ -23,8 +23,6 @@ Loader::includeModule('welpodron.form');
 // TODO: REWORK!
 require_once __DIR__ . '/ajax.php';
 
-var_dump();
-
 class WelpodronAdminSchemasEditComponent extends CBitrixComponent
 {
     public function executeComponent()

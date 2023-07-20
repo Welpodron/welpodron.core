@@ -1,4 +1,5 @@
 <?
+
 namespace Welpodron\Core\Templates\Ui;
 
 use Welpodron\Core\View\Renderer;
@@ -27,9 +28,13 @@ class Element
     public function addAttribute($key = '', $value = '')
     {
         if (is_int($key)) {
-            $this->element->setAttribute($value, '');
+            if (!empty($value)) {
+                $this->element->setAttribute($value, '');
+            }
         } else {
-            $this->element->setAttribute($key, $value);
+            if (!empty($key)) {
+                $this->element->setAttribute($key, $value);
+            }
         }
     }
 
