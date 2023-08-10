@@ -1,6 +1,11 @@
 <?
+
 use Bitrix\Main\ModuleManager;
 use Bitrix\Main\EventManager;
+use Bitrix\Main\Loader;
+use Bitrix\Main\Application;
+use Bitrix\Main\IO\Directory;
+use Bitrix\Main\Config\Option;
 
 class welpodron_core extends CModule
 {
@@ -8,9 +13,16 @@ class welpodron_core extends CModule
     {
         global $APPLICATION;
 
-        ModuleManager::registerModule($this->MODULE_ID);
+        if (!CheckVersion(ModuleManager::getVersion('main'), '14.00.00')) {
+            $APPLICATION->ThrowException('Версия главного модуля ниже 14.00.00');
+            return false;
+        }
 
-        $this->InstallEvents();
+        if (!$this->InstallFiles()) {
+            return false;
+        }
+
+        ModuleManager::registerModule($this->MODULE_ID);
 
         $APPLICATION->IncludeAdminFile('Установка модуля ' . $this->MODULE_ID, __DIR__ . '/step.php');
     }
@@ -19,9 +31,10 @@ class welpodron_core extends CModule
     {
         global $APPLICATION;
 
-        $this->UnInstallEvents();
+        $this->UnInstallFiles();
 
         ModuleManager::unRegisterModule($this->MODULE_ID);
+
         $APPLICATION->IncludeAdminFile('Деинсталляция модуля ' . $this->MODULE_ID, __DIR__ . '/unstep.php');
     }
 
@@ -32,28 +45,45 @@ class welpodron_core extends CModule
         $this->MODULE_DESCRIPTION = 'Модуль welpodron.core';
         $this->PARTNER_NAME = 'welpodron';
         $this->PARTNER_URI = 'https://github.com/Welpodron';
+        $this->MODULE_VERSION = '2.0.0';
+    }
 
-        $arModuleVersion = [];
+    public function InstallFiles()
+    {
+        global $APPLICATION;
 
-        $path = str_replace('\\', '/', __FILE__);
-        $path = substr($path, 0, strlen($path) - strlen('/index.php'));
-        include $path . '/version.php';
-
-        if (is_array($arModuleVersion) && array_key_exists('VERSION', $arModuleVersion)) {
-            $this->MODULE_VERSION = $arModuleVersion['VERSION'];
-            $this->MODULE_VERSION_DATE = $arModuleVersion['VERSION_DATE'];
+        try {
+            if (!CopyDirFiles(__DIR__ . '/js/', Application::getDocumentRoot() . '/bitrix/js', true, true)) {
+                $APPLICATION->ThrowException('Не удалось скопировать js');
+                return false;
+            };
+            if (!CopyDirFiles(__DIR__ . '/css/', Application::getDocumentRoot() . '/bitrix/css', true, true)) {
+                $APPLICATION->ThrowException('Не удалось скопировать css');
+                return false;
+            };
+        } catch (\Throwable $th) {
+            $APPLICATION->ThrowException($th->getMessage() . '\n' . $th->getTraceAsString());
+            return false;
         }
+
+        return true;
     }
 
-    public function InstallEvents()
+    public function UnInstallFiles()
     {
-        $eventManager = EventManager::getInstance();
-        $eventManager->registerEventHandler('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'Welpodron\Core\Helper', 'onBuildGlobalMenu');
+        Directory::deleteDirectory(Application::getDocumentRoot() . '/bitrix/js/' . $this->MODULE_ID);
+        Directory::deleteDirectory(Application::getDocumentRoot() . '/bitrix/css/' . $this->MODULE_ID);
     }
 
-    public function UnInstallEvents()
-    {
-        $eventManager = EventManager::getInstance();
-        $eventManager->unRegisterEventHandler('main', 'onBuildGlobalMenu', $this->MODULE_ID);
-    }
+    // public function InstallEvents()
+    // {
+    //     $eventManager = EventManager::getInstance();
+    //     $eventManager->registerEventHandler('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'Welpodron\Core\Helper', 'onBuildGlobalMenu');
+    // }
+
+    // public function UnInstallEvents()
+    // {
+    //     $eventManager = EventManager::getInstance();
+    //     $eventManager->unRegisterEventHandler('main', 'onBuildGlobalMenu', $this->MODULE_ID);
+    // }
 }

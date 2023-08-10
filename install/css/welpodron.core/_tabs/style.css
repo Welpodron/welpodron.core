@@ -1,0 +1,8 @@
+[data-w-tabs-item] {
+  display: none;
+  transition: opacity 0.4s ease;
+}
+
+[data-w-tabs-item-active] {
+  display: block;
+}

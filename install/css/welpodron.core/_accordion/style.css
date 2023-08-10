@@ -1,0 +1,9 @@
+[data-w-accordion-item] {
+  display: none;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+[data-w-accordion-item-active] {
+  display: block;
+}

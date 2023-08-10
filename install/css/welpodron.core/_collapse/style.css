@@ -1,0 +1,9 @@
+[data-w-collapse] {
+  display: none;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+[data-w-collapse-active] {
+  display: block;
+}
