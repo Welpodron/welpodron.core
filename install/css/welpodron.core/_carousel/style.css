@@ -39,5 +39,10 @@
 
 [data-w-carousel-item-active] {
   display: block;
-  /* transform: translateX(100%); */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-w-carousel-item] {
+    transition: none;
+  }
 }

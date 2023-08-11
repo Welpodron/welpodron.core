@@ -1,8 +1,14 @@
-(() => {
+((window) => {
   if (window.welpodron && window.welpodron.animate) {
-    //! TODO: v3 Добавить поддержку событий
+    if (window.welpodron.collapse) {
+      return;
+    }
 
-    const ATTRIBUTE_BASE = "data-w-collapse";
+    //! TODO: Возможно стоит https://css-tricks.com/how-to-animate-the-details-element/
+
+    const MODULE_BASE = "collapse";
+
+    const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
     const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
     const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
     const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
@@ -96,7 +102,7 @@
         const controls = document.querySelectorAll(
           `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
             `${ATTRIBUTE_BASE_ID}`
-          )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}][${ATTRIBUTE_ACTION_ARGS}="${args}"]`
+          )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
         );
 
         controls.forEach((control) => {
@@ -143,7 +149,7 @@
             const controls = document.querySelectorAll(
               `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
                 `${ATTRIBUTE_BASE_ID}`
-              )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}][${ATTRIBUTE_ACTION_ARGS}="${args}"]`
+              )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
             );
 
             controls.forEach((control) => {
@@ -175,4 +181,4 @@
 
     window.welpodron.collapse = Collapse;
   }
-})();
+})(window);

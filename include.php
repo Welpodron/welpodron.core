@@ -1,5 +1,7 @@
 <?
 
+use Bitrix\Main\Loader;
+
 CJSCore::RegisterExt('welpodron.core.utils', [
     'js' => '/bitrix/js/welpodron.core/utils/script.js',
     'skip_core' => true
@@ -22,3 +24,10 @@ CJSCore::RegisterExt('welpodron.core.modal', [
     'rel' => ['welpodron.core.animate'],
     'skip_core' => true
 ]);
+
+Loader::registerAutoLoadClasses(
+    'welpodron.core',
+    [
+        'Welpodron\Core\Helper' => 'lib/helper/helper.php',
+    ]
+);

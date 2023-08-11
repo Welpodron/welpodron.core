@@ -7,3 +7,9 @@
 [data-w-accordion-item-active] {
   display: block;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-w-accordion-item] {
+    transition: none;
+  }
+}

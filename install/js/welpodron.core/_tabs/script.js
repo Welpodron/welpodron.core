@@ -1,6 +1,23 @@
 "use strict";
-(() => {
+((window) => {
     if (window.welpodron && window.welpodron.animate) {
+        //! TODO: v3 Добавить поддержку событий
+        //! TODO: v3 Добавить поддержку стрелок
+        //! TODO: Возможно стоит https://css-tricks.com/how-to-animate-the-details-element/
+        if (window.welpodron.tabs) {
+            return;
+        }
+        const MODULE_BASE = "tabs";
+        const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+        const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
+        const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
+        const ATTRIBUTE_ITEM_ID = `${ATTRIBUTE_ITEM}-id`;
+        const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
+        const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
+        const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
+        const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
+        const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
+        const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
         // data-tabs-id
         // data-tabs-item-id
         // data-tabs-item-active
@@ -17,11 +34,14 @@
                 if (this.animation) {
                     window.clearTimeout(this.animation.timer);
                 }
-                if (this.element.getAttribute("data-w-tabs-item-active") != null) {
+                if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
                     return;
                 }
-                // debugger;
-                this.element.setAttribute("data-w-tabs-item-active", "");
+                this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, "");
+                const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"]`);
+                controls.forEach((control) => {
+                    control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, "");
+                });
                 this.element.style.opacity = `0`;
                 // Магичесий хак
                 this.element.scrollHeight;
@@ -39,13 +59,17 @@
                 if (this.animation) {
                     window.clearTimeout(this.animation.timer);
                 }
-                if (this.element.getAttribute("data-w-tabs-item-active") == null) {
+                if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
                     return;
                 }
                 this.animation = window.welpodron.animate({
                     element: this.element,
                     callback: () => {
-                        this.element.removeAttribute("data-w-tabs-item-active");
+                        this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
+                        const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"]`);
+                        controls.forEach((control) => {
+                            control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+                        });
                     },
                 });
                 await this.animation?.promise;
@@ -66,17 +90,13 @@
                 if (!target) {
                     return;
                 }
-                target = target.closest(`[data-w-tabs-id][data-w-tabs-action]`);
+                target = target.closest(`[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`);
                 if (!target) {
                     return;
                 }
-                const tabsId = target.getAttribute("data-w-tabs-id");
-                if (tabsId !== this.element.getAttribute("data-w-tabs-id")) {
-                    return;
-                }
-                const action = target.getAttribute("data-w-tabs-action");
-                const actionArgs = target.getAttribute("data-w-tabs-action-args");
-                const actionFlush = target.getAttribute("data-w-tabs-action-flush");
+                const action = target.getAttribute(ATTRIBUTE_ACTION);
+                const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
+                const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
                 if (!actionFlush) {
                     event.preventDefault();
                 }
@@ -95,16 +115,16 @@
                 if (!args) {
                     return;
                 }
-                const tabsId = this.element.getAttribute("data-w-tabs-id");
+                const tabsId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
                 if (!tabsId) {
                     return;
                 }
-                const items = document.querySelectorAll(`[data-w-tabs-id="${tabsId}"][data-w-tabs-item-id]`);
+                const items = this.element.querySelectorAll(`[${ATTRIBUTE_BASE_ID}="${tabsId}"][${ATTRIBUTE_ITEM_ID}]`);
                 if (!items) {
                     return;
                 }
                 const item = [...items].find((element) => {
-                    return element.getAttribute("data-w-tabs-item-id") === args;
+                    return element.getAttribute(ATTRIBUTE_ITEM_ID) === args;
                 });
                 if (!item) {
                     return;
@@ -134,4 +154,4 @@
         }
         window.welpodron.tabs = Tabs;
     }
-})();
+})(window);

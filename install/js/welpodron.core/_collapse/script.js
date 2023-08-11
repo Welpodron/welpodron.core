@@ -1,8 +1,12 @@
 "use strict";
-(() => {
+((window) => {
     if (window.welpodron && window.welpodron.animate) {
-        //! TODO: v3 Добавить поддержку событий
-        const ATTRIBUTE_BASE = "data-w-collapse";
+        if (window.welpodron.collapse) {
+            return;
+        }
+        //! TODO: Возможно стоит https://css-tricks.com/how-to-animate-the-details-element/
+        const MODULE_BASE = "collapse";
+        const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
         const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
         const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
         const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
@@ -52,7 +56,7 @@
                 if (this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null) {
                     return;
                 }
-                const controls = document.querySelectorAll(`[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}][${ATTRIBUTE_ACTION_ARGS}="${args}"]`);
+                const controls = document.querySelectorAll(`[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`);
                 controls.forEach((control) => {
                     control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, "");
                 });
@@ -84,7 +88,7 @@
                     callback: () => {
                         this.element.style.height = this.element.scrollHeight + "px";
                         this.element.removeAttribute(ATTRIBUTE_BASE_ACTIVE);
-                        const controls = document.querySelectorAll(`[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}][${ATTRIBUTE_ACTION_ARGS}="${args}"]`);
+                        const controls = document.querySelectorAll(`[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`);
                         controls.forEach((control) => {
                             control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
                         });
@@ -107,4 +111,4 @@
         }
         window.welpodron.collapse = Collapse;
     }
-})();
+})(window);

@@ -7,3 +7,9 @@
 [data-w-collapse-active] {
   display: block;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-w-collapse] {
+    transition: none;
+  }
+}

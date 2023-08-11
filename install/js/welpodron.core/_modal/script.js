@@ -1,5 +1,5 @@
 "use strict";
-(() => {
+((window) => {
     if (window.welpodron && window.welpodron.animate) {
         if (window.welpodron.modal) {
             return;
@@ -113,7 +113,7 @@
                 }
                 this.isTranslating = true;
                 document.body.style.overflow = "hidden";
-                document.body.style.touchAction = "none";
+                document.body.style.touchAction = "pinch-zoom";
                 this.element.style.display = "flex";
                 // Магичесий хак
                 this.element.scrollHeight;
@@ -171,4 +171,4 @@
         window.welpodron.modal = Modal;
         window.welpodron.modalsListActive = new Set();
     }
-})();
+})(window);

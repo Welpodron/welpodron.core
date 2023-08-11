@@ -3,25 +3,26 @@
   const path = require("path");
 
   const UglifyJS = require("uglify-js");
+  const csso = require("csso");
 
-  const files = new Set();
+  let files = new Set();
 
-  const walk = async (dirPath) =>
+  const walk = async (dirPath, ext) =>
     Promise.all(
       await fs.readdir(dirPath, { withFileTypes: true }).then((entries) =>
         entries.map((entry) => {
           const childPath = path.join(dirPath, entry.name);
 
           if (entry.isDirectory()) {
-            return walk(childPath);
+            return walk(childPath, ext);
           }
 
           if (
             entry.isFile() &&
-            entry.name.endsWith(".js") &&
-            !entry.name.endsWith(".min.js")
+            entry.name.endsWith(ext) &&
+            !entry.name.endsWith(".min" + ext)
           ) {
-            const fileName = path.basename(childPath, ".js");
+            const fileName = path.basename(childPath, ext);
 
             const parts = fileName.split(".");
 
@@ -35,9 +36,9 @@
       )
     );
 
-  await walk("./install/js");
+  await walk("./install/js", ".js");
 
-  const minifyFile = async (file) => {
+  const minifyJSFile = async (file) => {
     // Получить директорую файла
     const dir = path.dirname(file);
     // Получить имя файла без расширения
@@ -85,10 +86,51 @@
     );
   };
 
-  const promises = [];
+  let promises = [];
 
   for (let file of files) {
-    promises.push(minifyFile(file));
+    promises.push(minifyJSFile(file));
+  }
+
+  await Promise.all(promises);
+
+  files = new Set();
+
+  await walk("./install/css", ".css");
+
+  const minifyCSSFile = async (file) => {
+    // Получить директорую файла
+    const dir = path.dirname(file);
+    // Получить имя файла без расширения
+    const fileName = path.basename(file, ".css");
+
+    const content = await fs.readFile(file, "utf8");
+
+    const result = csso.minify(content, {
+      sourceMap: true,
+      filename: fileName + ".css",
+      comments: false,
+    });
+
+    // Сохранить минифицированный файл
+    await fs.writeFile(
+      path.join(dir, `${fileName}.min.css`),
+      result.css + `/*# sourceMappingURL=${fileName + ".min.css.map"} */`,
+      "utf8"
+    );
+
+    // Сохранить source map
+    await fs.writeFile(
+      path.join(dir, `${fileName}.min.css.map`),
+      result.map.toString(),
+      "utf8"
+    );
+  };
+
+  promises = [];
+
+  for (let file of files) {
+    promises.push(minifyCSSFile(file));
   }
 
   await Promise.all(promises);

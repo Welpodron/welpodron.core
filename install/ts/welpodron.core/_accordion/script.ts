@@ -1,6 +1,25 @@
-(() => {
+((window) => {
   if (window.welpodron && window.welpodron.animate) {
     //! TODO: v3 Добавить поддержку событий
+
+    //! TODO: Возможно стоит https://css-tricks.com/how-to-animate-the-details-element/
+
+    if (window.welpodron.accordion) {
+      return;
+    }
+
+    const MODULE_BASE = "accordion";
+
+    const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+    const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
+    const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
+    const ATTRIBUTE_ITEM_ID = `${ATTRIBUTE_ITEM}-id`;
+    const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
+    const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
+    const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
+    const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
+    const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
+    const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
     type AccordionConfigType = {};
 
@@ -17,9 +36,6 @@
       config?: AccordionItemConfigType;
     };
 
-    // data-accordion-id
-    // data-accordion-item-id
-    // data-accordion-item-active
     class AccordionItem {
       supportedActions = ["hide", "show"];
 
@@ -27,68 +43,95 @@
 
       element: HTMLElement;
 
-      isTranslating = false;
-      isActive = false;
+      animation: {
+        promise: Promise<unknown> & {
+          resolve: (value?: unknown | PromiseLike<unknown>) => void;
+        };
+        timer: number;
+      } | null = null;
 
       constructor({ element, accordion, config = {} }: AccordionItemPropsType) {
         this.element = element;
         this.accordion = accordion;
-
-        this.isActive =
-          this.element.getAttribute("data-w-accordion-item-active") != null;
       }
 
       show = async ({ args, event }: { args?: unknown; event?: Event }) => {
-        if (this.isTranslating || this.isActive) {
+        if (this.animation) {
+          window.clearTimeout(this.animation.timer);
+        }
+
+        if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
           return;
         }
 
-        this.isTranslating = true;
-
         this.element.style.height = `0px`;
-        this.element.style.display = "block";
+        this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, "");
+
+        const controls = document.querySelectorAll(
+          `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+            `${ATTRIBUTE_ITEM_ID}`
+          )}"]`
+        );
+
+        controls.forEach((control) => {
+          control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, "");
+        });
+
         // Магичесий хак
         this.element.scrollHeight;
 
-        await window.welpodron.animate({
+        this.animation = window.welpodron.animate({
           element: this.element,
           callback: () => {
             this.element.style.height = this.element.scrollHeight + "px";
           },
         });
 
-        this.element.setAttribute("data-w-accordion-item-active", "");
-        this.element.style.removeProperty("height");
-        this.element.style.removeProperty("display");
+        await this.animation?.promise;
 
-        this.isTranslating = false;
-        this.isActive = true;
+        this.element.style.removeProperty("height");
+
+        this.animation = null;
       };
 
       hide = async ({ args, event }: { args?: unknown; event?: Event }) => {
-        if (this.isTranslating || !this.isActive) {
-          return;
+        if (this.animation) {
+          window.clearTimeout(this.animation.timer);
         }
 
-        this.isTranslating = true;
+        if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
+          return;
+        }
 
         this.element.style.height = this.element.scrollHeight + "px";
         this.element.style.display = "block";
 
-        await window.welpodron.animate({
+        this.animation = window.welpodron.animate({
           element: this.element,
           callback: () => {
             this.element.style.height = this.element.scrollHeight + "px";
-            this.element.removeAttribute("data-w-accordion-item-active");
+            this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
+
+            const controls = document.querySelectorAll(
+              `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+                `${ATTRIBUTE_ITEM_ID}`
+              )}"]`
+            );
+
+            controls.forEach((control) => {
+              control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+            });
+
             this.element.style.height = `0px`;
           },
         });
 
+        await this.animation?.promise;
+
         this.element.style.removeProperty("display");
         this.element.style.removeProperty("height");
 
-        this.isTranslating = false;
-        this.isActive = false;
+        this.animation = null;
       };
     }
 
@@ -96,8 +139,6 @@
       supportedActions = ["show"];
 
       element: HTMLElement;
-
-      isTranslating = false;
 
       constructor({ element, config = {} }: AccordionPropsType) {
         this.element = element;
@@ -114,31 +155,25 @@
         }
 
         target = (target as Element).closest(
-          `[data-w-accordion-id][data-w-accordion-action]`
+          `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+            `${ATTRIBUTE_BASE_ID}`
+          )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
         );
 
         if (!target) {
           return;
         }
 
-        const accordionId = (target as Element).getAttribute(
-          "data-w-accordion-id"
-        );
-
-        if (accordionId !== this.element.getAttribute("data-w-accordion-id")) {
-          return;
-        }
-
         const action = (target as Element).getAttribute(
-          "data-w-accordion-action"
+          ATTRIBUTE_ACTION
         ) as keyof this;
 
         const actionArgs = (target as Element).getAttribute(
-          "data-w-accordion-action-args"
+          ATTRIBUTE_ACTION_ARGS
         );
 
         const actionFlush = (target as Element).getAttribute(
-          "data-w-accordion-action-flush"
+          ATTRIBUTE_ACTION_FLUSH
         );
 
         if (!actionFlush) {
@@ -164,18 +199,14 @@
           return;
         }
 
-        if (this.isTranslating) {
-          return;
-        }
-
-        const accordionId = this.element.getAttribute("data-w-accordion-id");
+        const accordionId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
 
         if (!accordionId) {
           return;
         }
 
-        const items = document.querySelectorAll(
-          `[data-w-accordion-id="${accordionId}"][data-w-accordion-item-id]`
+        const items = this.element.querySelectorAll(
+          `[${ATTRIBUTE_BASE_ID}="${accordionId}"][${ATTRIBUTE_ITEM_ID}]`
         );
 
         if (!items) {
@@ -183,14 +214,12 @@
         }
 
         const item = [...items].find((element) => {
-          return element.getAttribute("data-w-accordion-item-id") === args;
+          return element.getAttribute(ATTRIBUTE_ITEM_ID) === args;
         });
 
         if (!item) {
           return;
         }
-
-        this.isTranslating = true;
 
         const promises = [];
 
@@ -208,11 +237,9 @@
         }
 
         await Promise.allSettled(promises);
-
-        this.isTranslating = false;
       };
     }
 
     window.welpodron.accordion = Accordion;
   }
-})();
+})(window);

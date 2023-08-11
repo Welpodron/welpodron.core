@@ -1,1 +1,1 @@
-[data-carousel]{position:relative;overflow:hidden;width:100%}[data-carousel-item]{position:relative;float:left;width:100%;margin-right:-100%;display:none;-webkit-backface-visibility:hidden;backface-visibility:hidden}[data-carousel-item][data-active]{display:block}
+[data-carousel]{position:relative;overflow:hidden;width:100%}[data-carousel-item]{position:relative;float:left;width:100%;margin-right:-100%;display:none;backface-visibility:hidden}[data-carousel-item][data-active]{display:block}/*# sourceMappingURL=style.min.css.map */

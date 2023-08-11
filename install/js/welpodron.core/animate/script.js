@@ -1,5 +1,5 @@
 "use strict";
-(() => {
+((window) => {
     if (window.welpodron.utils) {
         const animate = ({ element, callback, }) => {
             const promise = window.welpodron.utils.deferred();
@@ -17,4 +17,4 @@
         };
         window.welpodron.animate = animate;
     }
-})();
+})(window);

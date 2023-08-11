@@ -1,0 +1,1 @@
+{"version":3,"sources":["style.css"],"names":[],"mappings":"AAAA,e,CACE,Y,CACA,e,CAGF,4B,CACE,a","file":"style.css","sourcesContent":["[data-collapse] {\r\n  display: none;\r\n  overflow: hidden;\r\n}\r\n\r\n[data-collapse][data-active] {\r\n  display: block;\r\n}\r\n"]}

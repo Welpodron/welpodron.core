@@ -1,9 +1,11 @@
 "use strict";
-(() => {
+((window) => {
     if (!window.welpodron) {
         window.welpodron = {};
     }
-    window.welpodron.templater = {};
+    if (!window.welpodron.templater) {
+        window.welpodron.templater = {};
+    }
     const isStringHTML = (string) => {
         const doc = new DOMParser().parseFromString(string, "text/html");
         return [...doc.body.childNodes].some((node) => node.nodeType === 1);
@@ -39,4 +41,4 @@
         return container.appendChild(fragment);
     };
     window.welpodron.templater.renderHTML = renderHTML;
-})();
+})(window);

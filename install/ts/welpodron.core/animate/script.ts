@@ -1,4 +1,4 @@
-(() => {
+((window) => {
   if (window.welpodron.utils) {
     const animate = ({
       element,
@@ -30,4 +30,4 @@
 
     window.welpodron.animate = animate;
   }
-})();
+})(window);

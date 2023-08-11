@@ -1,8 +1,10 @@
-(function (window) {
-  window.welpodron = {};
+(() => {
+  if (!window.welpodron) {
+    window.welpodron = {};
+  }
   window.welpodron.core = {};
 
-  window.welpodron.core.uuid = (prefix = '') =>
+  window.welpodron.core.uuid = (prefix = "") =>
     prefix + Math.random().toString(36).slice(3);
 
   window.welpodron.core.deferred = () => {
@@ -13,4 +15,4 @@
     promise.resolve = resolvement;
     return promise;
   };
-})(window);
+})();

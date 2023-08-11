@@ -1,4 +1,4 @@
-(() => {
+((window) => {
   if (!window.welpodron) {
     window.welpodron = {};
   }
@@ -32,4 +32,4 @@
 
   window.welpodron.utils.deferred = deferred;
   window.welpodron.utils.sleep = sleep;
-})();
+})(window);

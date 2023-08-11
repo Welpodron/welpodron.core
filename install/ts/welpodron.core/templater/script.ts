@@ -1,9 +1,11 @@
-(() => {
+((window) => {
   if (!window.welpodron) {
     window.welpodron = {};
   }
 
-  window.welpodron.templater = {};
+  if (!window.welpodron.templater) {
+    window.welpodron.templater = {};
+  }
 
   const isStringHTML = (string: string) => {
     const doc = new DOMParser().parseFromString(string, "text/html");
@@ -54,4 +56,4 @@
   };
 
   window.welpodron.templater.renderHTML = renderHTML;
-})();
+})(window);
