@@ -1,0 +1,75 @@
+[data-w-aos] {
+  transition-duration: 0.5s;
+  transition-timing-function: ease;
+}
+
+[data-w-aos|="underline"]::before {
+  transition: width 1s;
+  width: 0 !important;
+}
+
+[data-w-aos|="underline"][data-w-aos-animated]::before {
+  width: 100% !important;
+}
+
+[data-w-aos|="color"] {
+  transition: color 1s;
+  color: #fff;
+}
+
+[data-w-aos|="color"][data-w-aos-animated] {
+  color: #ef4444;
+}
+
+[data-w-aos|="fade"] {
+  opacity: 0;
+  transition-property: opacity;
+}
+
+[data-w-aos|="fade"][data-w-aos-animated] {
+  opacity: 1;
+}
+
+[data-w-aos|="slide"] {
+  opacity: 0;
+  transition-property: opacity, transform;
+}
+
+[data-w-aos="slide-up"] {
+  transform: translateY(20%);
+}
+
+[data-w-aos="slide-down"] {
+  transform: translateY(-20%);
+}
+
+[data-w-aos="slide-left"] {
+  transform: translateX(20%);
+}
+
+[data-w-aos="slide-right"] {
+  transform: translateX(-20%);
+}
+
+[data-w-aos|="slide"][data-w-aos-animated] {
+  opacity: 1;
+  transform: none;
+}
+
+[data-w-aos|="zoom"] {
+  opacity: 0;
+  transition-property: opacity, transform;
+}
+
+[data-w-aos="zoom-in"] {
+  transform: scale(0.5);
+}
+
+[data-w-aos="zoom-out"] {
+  transform: scale(1.1);
+}
+
+[data-w-aos|="zoom"][data-w-aos-animated] {
+  opacity: 1;
+  transform: none;
+}

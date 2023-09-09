@@ -1,11 +1,8 @@
 {
   "name": "welpodron.core",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Данный модуль предназначен для работы с другими модулями, компонентами, а также js и css библиотекой ядра",
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,7 +19,6 @@
   "homepage": "https://github.com/Welpodron/welpodron.core#readme",
   "devDependencies": {
     "csso": "^5.0.5",
-    "typescript": "^5.1.6",
     "uglify-js": "^3.17.4"
   }
 }

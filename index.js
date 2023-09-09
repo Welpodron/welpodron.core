@@ -46,16 +46,29 @@
 
     const content = await fs.readFile(file, "utf8");
 
+    const sourceMapOptions = {
+      filename: `${fileName}.min.js`,
+      url: `${fileName}.min.js.map`,
+    };
+
+    try {
+      const tsSourceMap = await fs.readFile(
+        path.join(dir, `${fileName}.js.map`),
+        "utf8"
+      );
+
+      if (tsSourceMap) {
+        sourceMapOptions.content = tsSourceMap;
+      }
+    } catch (error) {}
+
     const result = UglifyJS.minify(
       {
         [`${fileName}.js`]: content,
       },
       {
         warnings: true,
-        sourceMap: {
-          filename: `${fileName}.min.js`,
-          url: `${fileName}.min.js.map`,
-        },
+        sourceMap: sourceMapOptions,
       }
     );
 
