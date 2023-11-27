@@ -1,6 +1,6 @@
 {
   "name": "welpodron.core",
-  "version": "2.0.0",
+  "version": "2.0.5",
   "description": "Данный модуль предназначен для работы с другими модулями, компонентами, а также js и css библиотекой ядра",
   "main": "index.js",
   "scripts": {

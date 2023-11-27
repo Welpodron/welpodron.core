@@ -28,6 +28,12 @@ CJSCore::RegisterExt('welpodron.core.aos', [
 
 // components v2 
 
+CJSCore::RegisterExt('welpodron.core.popover', [
+    'js' => '/bitrix/js/welpodron.core/v2/popover/script.js',
+    'css' => '/bitrix/css/welpodron.core/v2/popover/style.css',
+    'skip_core' => true
+]);
+
 CJSCore::RegisterExt('welpodron.core.modal', [
     'js' => '/bitrix/js/welpodron.core/v2/modal/script.js',
     'css' => '/bitrix/css/welpodron.core/v2/modal/style.css',
@@ -55,6 +61,20 @@ CJSCore::RegisterExt('welpodron.core.carousel', [
     'rel' => ['welpodron.core.animate'],
     'skip_core' => true
 ]);
+
+//! TEMP TEST: FORM API WILL CHANGE IN FUTURE
+
+CJSCore::RegisterExt('welpodron.form.input-number', [
+    'js' => '/bitrix/js/welpodron.core/v2/_form/_number/script.js',
+    'skip_core' => true
+]);
+
+CJSCore::RegisterExt('welpodron.form.input-calendar', [
+    'js' => '/bitrix/js/welpodron.core/v2/_form/_calendar/script.js',
+    'skip_core' => true
+]);
+
+//! TEMP TEST: FORM API WILL CHANGE IN FUTURE 
 
 Loader::registerAutoLoadClasses(
     'welpodron.core',

@@ -48,7 +48,7 @@
                     this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT, "");
                 }
                 this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, "");
-                const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"]`);
+                const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}]`);
                 controls.forEach((control) => {
                     control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, "");
                 });
@@ -86,7 +86,7 @@
                             this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT, "");
                         }
                         this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
-                        const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"]`);
+                        const controls = document.querySelectorAll(`[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(`${ATTRIBUTE_ITEM_ID}`)}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(`${ATTRIBUTE_BASE_ID}`)}"][${ATTRIBUTE_CONTROL}]`);
                         controls.forEach((control) => {
                             control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
                         });

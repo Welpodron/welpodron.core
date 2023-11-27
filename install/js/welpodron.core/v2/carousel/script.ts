@@ -82,7 +82,9 @@
         const controls = document.querySelectorAll(
           `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
             `${ATTRIBUTE_ITEM_ID}`
-          )}"]`
+          )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+            `${ATTRIBUTE_BASE_ID}`
+          )}"][${ATTRIBUTE_CONTROL}]`
         );
 
         controls.forEach((control) => {
@@ -140,7 +142,9 @@
             const controls = document.querySelectorAll(
               `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
                 `${ATTRIBUTE_ITEM_ID}`
-              )}"]`
+              )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+                `${ATTRIBUTE_BASE_ID}`
+              )}"][${ATTRIBUTE_CONTROL}]`
             );
 
             controls.forEach((control) => {

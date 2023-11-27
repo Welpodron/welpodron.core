@@ -1,0 +1,7 @@
+[data-w-popover] {
+  position: absolute;
+  display: none;
+}
+[data-w-popover-active] {
+  display: block;
+}
