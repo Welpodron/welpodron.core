@@ -10,7 +10,7 @@
   };
 
   class Popover {
-    static #SUPPORTED_ACTIONS = ["toggle", "show", "close"];
+    static #SUPPORTED_ACTIONS = ['toggle', 'show', 'close'];
 
     element: HTMLDialogElement;
     pinned: boolean;
@@ -26,11 +26,11 @@
 
       this.pinned =
         config.pinned ??
-        this.element.getAttribute("data-popover-pinned") != null;
+        this.element.getAttribute('data-popover-pinned') != null;
 
       this.hoverable =
         config.hoverable ??
-        this.element.getAttribute("data-popover-hoverable") != null;
+        this.element.getAttribute('data-popover-hoverable') != null;
 
       this.outsideControls = [
         ...document.querySelectorAll(
@@ -47,10 +47,10 @@
       // track opening
       this.dialogAttrObserver = new MutationObserver((mutations, observer) => {
         mutations.forEach(async (mutation) => {
-          if (mutation.attributeName === "open") {
+          if (mutation.attributeName === 'open') {
             const dialog = mutation.target as HTMLDialogElement;
 
-            const isOpen = dialog.hasAttribute("open");
+            const isOpen = dialog.hasAttribute('open');
             if (!isOpen) return;
 
             // set focus
@@ -70,37 +70,37 @@
 
             if (this.hoverable) {
               this.element.removeEventListener(
-                "mouseenter",
+                'mouseenter',
                 this.#handleElementMouseEnter
               );
               this.element.addEventListener(
-                "mouseenter",
+                'mouseenter',
                 this.#handleElementMouseEnter
               );
               this.element.removeEventListener(
-                "mouseleave",
+                'mouseleave',
                 this.#handleElementMouseLeave
               );
               this.element.addEventListener(
-                "mouseleave",
+                'mouseleave',
                 this.#handleElementMouseLeave
               );
             }
 
             this.insideControls.forEach((control) => {
-              control.removeEventListener("click", this.#handleControlClick);
-              control.addEventListener("click", this.#handleControlClick);
+              control.removeEventListener('click', this.#handleControlClick);
+              control.addEventListener('click', this.#handleControlClick);
             });
 
-            document.removeEventListener("click", this.#handleDocumentClick);
-            document.addEventListener("click", this.#handleDocumentClick);
+            document.removeEventListener('click', this.#handleDocumentClick);
+            document.addEventListener('click', this.#handleDocumentClick);
             document.removeEventListener(
-              "keydown",
+              'keydown',
               this.#handleDocumentKeydown
             );
-            document.addEventListener("keydown", this.#handleDocumentKeydown);
-            window.removeEventListener("resize", this.#handleWindowResize);
-            window.addEventListener("resize", this.#handleWindowResize);
+            document.addEventListener('keydown', this.#handleDocumentKeydown);
+            window.removeEventListener('resize', this.#handleWindowResize);
+            window.addEventListener('resize', this.#handleWindowResize);
           }
         });
       });
@@ -109,21 +109,21 @@
         attributes: true,
       });
 
-      if (this.element.hasAttribute("open")) {
-        document.removeEventListener("click", this.#handleDocumentClick);
-        document.addEventListener("click", this.#handleDocumentClick);
-        document.removeEventListener("keydown", this.#handleDocumentKeydown);
-        document.addEventListener("keydown", this.#handleDocumentKeydown);
-        window.removeEventListener("resize", this.#handleWindowResize);
-        window.addEventListener("resize", this.#handleWindowResize);
+      if (this.element.hasAttribute('open')) {
+        document.removeEventListener('click', this.#handleDocumentClick);
+        document.addEventListener('click', this.#handleDocumentClick);
+        document.removeEventListener('keydown', this.#handleDocumentKeydown);
+        document.addEventListener('keydown', this.#handleDocumentKeydown);
+        window.removeEventListener('resize', this.#handleWindowResize);
+        window.addEventListener('resize', this.#handleWindowResize);
 
         if (this.hoverable) {
           this.element.removeEventListener(
-            "mouseleave",
+            'mouseleave',
             this.#handleElementMouseLeave
           );
           this.element.addEventListener(
-            "mouseleave",
+            'mouseleave',
             this.#handleElementMouseLeave
           );
         }
@@ -132,24 +132,24 @@
         this.#calculatePosition({ anchor: this.lastAnchor });
       }
 
-      this.element.removeEventListener("close", this.#handleElementClose);
-      this.element.addEventListener("close", this.#handleElementClose);
+      this.element.removeEventListener('close', this.#handleElementClose);
+      this.element.addEventListener('close', this.#handleElementClose);
 
       this.outsideControls.forEach((control) => {
-        control.removeEventListener("click", this.#handleControlClick);
-        control.addEventListener("click", this.#handleControlClick);
+        control.removeEventListener('click', this.#handleControlClick);
+        control.addEventListener('click', this.#handleControlClick);
 
         if (this.hoverable) {
           control.removeEventListener(
-            "mouseenter",
+            'mouseenter',
             this.#handleControlMouseEnter
           );
           control.removeEventListener(
-            "mouseleave",
+            'mouseleave',
             this.#handleControlMouseLeave
           );
-          control.addEventListener("mouseenter", this.#handleControlMouseEnter);
-          control.addEventListener("mouseleave", this.#handleControlMouseLeave);
+          control.addEventListener('mouseenter', this.#handleControlMouseEnter);
+          control.addEventListener('mouseleave', this.#handleControlMouseLeave);
         }
       });
     }
@@ -159,7 +159,7 @@
         clearTimeout(this.hoverableLeaveTimeout);
       }
 
-      if (this.element.hasAttribute("open")) {
+      if (this.element.hasAttribute('open')) {
         return;
       }
       this.show({ evt });
@@ -170,12 +170,12 @@
         clearTimeout(this.hoverableLeaveTimeout);
       }
 
-      this.hoverableLeaveTimeout = setTimeout(() => {
+      this.hoverableLeaveTimeout = window.setTimeout(() => {
         if (this.element.contains(document.activeElement)) {
           return;
         }
 
-        if (this.element.hasAttribute("open")) {
+        if (this.element.hasAttribute('open')) {
           this.close();
         }
       }, 100);
@@ -192,26 +192,26 @@
         clearTimeout(this.hoverableLeaveTimeout);
       }
 
-      this.hoverableLeaveTimeout = setTimeout(() => {
+      this.hoverableLeaveTimeout = window.setTimeout(() => {
         if (this.element.contains(document.activeElement)) {
           return;
         }
 
-        if (this.element.hasAttribute("open")) {
+        if (this.element.hasAttribute('open')) {
           this.close();
         }
       }, 100);
     };
 
     toggle = ({ evt }: { evt: MouseEvent }) => {
-      if (this.element.hasAttribute("open")) {
+      if (this.element.hasAttribute('open')) {
         return this.close();
       }
       return this.show({ evt });
     };
 
     close = () => {
-      this.element.close("dismiss");
+      this.element.close('dismiss');
     };
 
     show = ({ evt }: { evt: MouseEvent }) => {
@@ -221,10 +221,10 @@
 
       if (anchorEl) {
         this.lastAnchor = anchorEl;
-        this.element.style.visibility = "hidden";
+        this.element.style.visibility = 'hidden';
         this.element.show();
         this.#calculatePosition({ anchor: anchorEl });
-        this.element.style.visibility = "visible";
+        this.element.style.visibility = 'visible';
       }
     };
 
@@ -239,8 +239,8 @@
       let x = 0;
       let y = 0;
 
-      this.element.style.left = x + "px";
-      this.element.style.top = y + anchorHeight + "px";
+      this.element.style.left = x + 'px';
+      this.element.style.top = y + anchorHeight + 'px';
 
       if (this.pinned) {
         return;
@@ -257,14 +257,14 @@
         Math.ceil(elementWidth + elementWidth) >=
         document.documentElement.clientWidth
       ) {
-        this.element.style.left = x - elementWidth + anchorWidth + "px";
+        this.element.style.left = x - elementWidth + anchorWidth + 'px';
       }
 
       if (
         Math.ceil(elementTop + elementHeight) >=
         document.documentElement.clientHeight
       ) {
-        this.element.style.top = y - elementHeight + "px";
+        this.element.style.top = y - elementHeight + 'px';
       }
     };
 
@@ -273,10 +273,10 @@
 
       const { currentTarget } = evt;
       const action = (currentTarget as Element).getAttribute(
-        "data-popover-action"
+        'data-popover-action'
       ) as keyof this;
       const actionArgs = (currentTarget as Element).getAttribute(
-        "data-popover-action-args"
+        'data-popover-action-args'
       );
 
       if (!Popover.#SUPPORTED_ACTIONS.includes(action as string)) return;
@@ -304,7 +304,7 @@
     };
 
     #handleDocumentKeydown = ({ key }: KeyboardEvent) => {
-      if (key === "Escape") {
+      if (key === 'Escape') {
         this.close();
       }
     };
@@ -312,19 +312,19 @@
     #handleElementClose = ({ currentTarget }: Event) => {
       if (this.hoverable) {
         this.element.removeEventListener(
-          "mouseenter",
+          'mouseenter',
           this.#handleElementMouseEnter
         );
         this.element.removeEventListener(
-          "mouseleave",
+          'mouseleave',
           this.#handleElementMouseLeave
         );
       }
-      window.removeEventListener("resize", this.#handleWindowResize);
-      document.removeEventListener("click", this.#handleDocumentClick);
-      document.removeEventListener("keydown", this.#handleDocumentKeydown);
+      window.removeEventListener('resize', this.#handleWindowResize);
+      document.removeEventListener('click', this.#handleDocumentClick);
+      document.removeEventListener('keydown', this.#handleDocumentKeydown);
       this.insideControls.forEach((control) => {
-        control.removeEventListener("click", this.#handleControlClick);
+        control.removeEventListener('click', this.#handleControlClick);
       });
     };
 
@@ -342,9 +342,9 @@
   (window as any).welpodron.popover = Popover;
 
   document.addEventListener(
-    "DOMContentLoaded",
+    'DOMContentLoaded',
     () => {
-      document.querySelectorAll("dialog[data-popover]").forEach((element) => {
+      document.querySelectorAll('dialog[data-popover]').forEach((element) => {
         new Popover({ element: element as HTMLDialogElement });
       });
     },

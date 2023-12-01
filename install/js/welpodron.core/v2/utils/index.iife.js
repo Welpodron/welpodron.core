@@ -1,9 +1,8 @@
-"use strict";
-((window) => {
-    if (!window.welpodron) {
-        window.welpodron = {};
-    }
-    window.welpodron.utils = {};
+this.window = this.window || {};
+this.window.welpodron = this.window.welpodron || {};
+(function (exports) {
+    'use strict';
+
     const deferred = () => {
         let resolver, promise;
         promise = new Promise((resolve, reject) => {
@@ -19,7 +18,8 @@
         }, ms);
         return promise;
     };
-    window.welpodron.utils.deferred = deferred;
-    window.welpodron.utils.sleep = sleep;
-})(window);
-//# sourceMappingURL=script.js.map
+
+    exports.deferred = deferred;
+    exports.sleep = sleep;
+
+})(this.window.welpodron.utils = this.window.welpodron.utils || {});

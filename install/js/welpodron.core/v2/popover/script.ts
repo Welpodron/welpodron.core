@@ -7,7 +7,7 @@
     return;
   }
 
-  const MODULE_BASE = "popover";
+  const MODULE_BASE = 'popover';
 
   const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
   const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
@@ -32,7 +32,7 @@
   };
 
   class Popover {
-    supportedActions = ["hide", "show"];
+    supportedActions = ['hide', 'show'];
 
     isHoverable = false;
     hoverableLeaveTimeout: number | null = null;
@@ -65,13 +65,13 @@
       });
 
       if (this.isHoverable) {
-        document.removeEventListener("mouseover", this.handleDocumentMouseOver);
-        document.addEventListener("mouseover", this.handleDocumentMouseOver);
-        document.removeEventListener("mouseout", this.handleDocumentMouseOut);
-        document.addEventListener("mouseout", this.handleDocumentMouseOut);
+        document.removeEventListener('mouseover', this.handleDocumentMouseOver);
+        document.addEventListener('mouseover', this.handleDocumentMouseOver);
+        document.removeEventListener('mouseout', this.handleDocumentMouseOut);
+        document.addEventListener('mouseout', this.handleDocumentMouseOut);
       } else {
-        document.removeEventListener("click", this.handleDocumentClick);
-        document.addEventListener("click", this.handleDocumentClick);
+        document.removeEventListener('click', this.handleDocumentClick);
+        document.addEventListener('click', this.handleDocumentClick);
       }
     }
 
@@ -84,8 +84,8 @@
         bottom: anchorBottom,
       } = anchor.getBoundingClientRect();
 
-      this.element.style.left = anchorLeft + window.scrollX + "px";
-      this.element.style.top = anchorTop + anchorHeight + window.scrollY + "px";
+      this.element.style.left = anchorLeft + window.scrollX + 'px';
+      this.element.style.top = anchorTop + anchorHeight + window.scrollY + 'px';
 
       //! Код ниже работает если находятся в одном relative контейнере
       // this.element.style.left = anchor.offsetLeft + "px";
@@ -103,12 +103,12 @@
 
       if (Math.ceil(elementLeft + elementWidth) >= beforeClientWidth) {
         this.element.style.left =
-          anchorLeft + window.scrollX - elementWidth + anchorWidth + "px";
+          anchorLeft + window.scrollX - elementWidth + anchorWidth + 'px';
       }
 
       if (Math.ceil(elementTop + elementHeight) >= beforeClientHeight) {
         this.element.style.top =
-          anchorTop + window.scrollY - elementHeight + "px";
+          anchorTop + window.scrollY - elementHeight + 'px';
       }
 
       //! Код ниже работает если находятся в одном relative контейнере
@@ -148,13 +148,13 @@
       this.resizeObserver.observe(this.element);
       this.resizeObserver.observe(anchorEl);
 
-      document.removeEventListener("keydown", this.handleDocumentKeyDown);
-      document.addEventListener("keydown", this.handleDocumentKeyDown);
+      document.removeEventListener('keydown', this.handleDocumentKeyDown);
+      document.addEventListener('keydown', this.handleDocumentKeyDown);
 
-      window.removeEventListener("resize", this.handleWindowResize);
-      window.addEventListener("resize", this.handleWindowResize);
+      window.removeEventListener('resize', this.handleWindowResize);
+      window.addEventListener('resize', this.handleWindowResize);
 
-      this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, "");
+      this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, '');
 
       this.calculatePosition({ anchor: anchorEl as HTMLElement });
 
@@ -168,7 +168,7 @@
 
       this.resizeObserver.disconnect();
 
-      document.removeEventListener("keydown", this.handleDocumentKeyDown);
+      document.removeEventListener('keydown', this.handleDocumentKeyDown);
 
       this.lastFocusedElement?.focus();
 
@@ -178,7 +178,7 @@
     };
 
     handleDocumentKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         return this.hide({ event });
       }
     };
@@ -311,7 +311,7 @@
         clearTimeout(this.hoverableLeaveTimeout);
       }
 
-      this.hoverableLeaveTimeout = setTimeout(() => {
+      this.hoverableLeaveTimeout = window.setTimeout(() => {
         if (!relatedTarget) {
           return this.hide({});
         }
