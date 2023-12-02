@@ -1,13 +1,13 @@
-import { deferred } from '../utils';
+import { utils } from '../utils';
 
-export const animate = ({
+const animate = ({
   element,
   callback,
 }: {
   element: HTMLElement;
   callback: () => void;
 }) => {
-  const promise = deferred();
+  const promise = utils.deferred();
 
   callback();
 
@@ -27,3 +27,5 @@ export const animate = ({
     timer,
   };
 };
+
+export { animate };

@@ -105,9 +105,9 @@
 
   //! SHITTY SOLUTION AHEAD CRINGE WARNING
   const getNameByFile = (file) => {
-    if (path.dirname(file).endsWith('utils')) {
-      return 'window.welpodron.utils';
-    }
+    // if (path.dirname(file).endsWith('utils')) {
+    //   return 'window.welpodron.utils';
+    // }
 
     return 'window.welpodron';
   };
@@ -124,17 +124,19 @@
       /** @type {import('rollup').RollupOptions} */
       const inputOptions = {
         input: file,
-        plugins: [typescript()],
+        plugins: [typescript({ sourceMap: true })],
         external: ['../utils', '../animate'],
       };
       const outputOptions = {
         format: 'iife',
         name: getNameByFile(file),
         extend: true,
+        sourcemap: true,
         file: path.format({ ...path.parse(file), base: '', ext: 'iife.js' }),
         globals: {
           [path.resolve('./install/js/welpodron.core/v2/utils/')]:
-            'window.welpodron.utils',
+            // 'window.welpodron.utils',
+            'window.welpodron',
           [path.resolve('./install/js/welpodron.core/v2/animate/')]:
             'window.welpodron',
         },

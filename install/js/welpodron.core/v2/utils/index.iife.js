@@ -1,5 +1,4 @@
 this.window = this.window || {};
-this.window.welpodron = this.window.welpodron || {};
 (function (exports) {
     'use strict';
 
@@ -18,8 +17,12 @@ this.window.welpodron = this.window.welpodron || {};
         }, ms);
         return promise;
     };
+    const utils = {
+        deferred,
+        sleep,
+    };
 
-    exports.deferred = deferred;
-    exports.sleep = sleep;
+    exports.utils = utils;
 
-})(this.window.welpodron.utils = this.window.welpodron.utils || {});
+})(this.window.welpodron = this.window.welpodron || {});
+//# sourceMappingURL=index.iife.js.map

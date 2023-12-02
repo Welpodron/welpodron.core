@@ -23,4 +23,9 @@ const sleep = ({ ms }: { ms: number }) => {
   return promise;
 };
 
-export { deferred, sleep };
+const utils = {
+  deferred,
+  sleep,
+};
+
+export { utils };

@@ -3,7 +3,7 @@ this.window = this.window || {};
     'use strict';
 
     const animate = ({ element, callback, }) => {
-        const promise = utils.deferred();
+        const promise = utils.utils.deferred();
         callback();
         const timer = setTimeout(() => {
             element.addEventListener('transitionend', () => {
@@ -19,4 +19,5 @@ this.window = this.window || {};
 
     exports.animate = animate;
 
-})(this.window.welpodron = this.window.welpodron || {}, window.welpodron.utils);
+})(this.window.welpodron = this.window.welpodron || {}, window.welpodron);
+//# sourceMappingURL=index.iife.js.map

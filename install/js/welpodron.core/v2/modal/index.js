@@ -1,8 +1,6 @@
 import { animate } from '../animate/index.js';
 
-window.welpodron = window.welpodron || {};
-window.welpodron.modalsListActive =
-    window.welpodron.modalsListActive || new Set();
+const modalsListActive = new Set();
 const MODULE_BASE = 'modal';
 const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
@@ -13,6 +11,9 @@ const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
 const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
 const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
+// FOR MINIFICATION PURPOSES
+const DEFAULT_EVENT_CLICK = 'click';
+const DEFAULT_EVENT_KEYDOWN = 'keydown';
 class Modal {
     supportedActions = ['hide', 'show'];
     element;
@@ -37,13 +38,12 @@ class Modal {
         this.firstFocusableElement.tabIndex = 0;
         this.lastFocusableElement = document.createElement('button');
         this.lastFocusableElement.style.cssText =
-            'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;';
+            'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;';
         this.lastFocusableElement.onfocus = () => this.firstFocusableElement.focus();
         this.firstFocusableElement.append(...this.element.childNodes);
         this.element.append(this.firstFocusableElement);
         this.element.append(this.lastFocusableElement);
-        document.removeEventListener('click', this.handleDocumentClick);
-        document.addEventListener('click', this.handleDocumentClick);
+        document.addEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
     }
     handleDocumentClick = (event) => {
         let { target } = event;
@@ -89,18 +89,18 @@ class Modal {
                 return;
             }
         }
-        if (event.key === 'Escape' && window.welpodron.modalsListActive.size) {
+        if (event.key === 'Escape' && modalsListActive.size) {
             //! TODO: Исправить
             //! Так тут кароч вызывается несколько раз так как там все ниже асихроно и вообще
             //! получается что если открыто в настоящий момент несколько окон то они все закроются!
-            const lastModal = [...window.welpodron.modalsListActive][window.welpodron.modalsListActive.size - 1];
+            const lastModal = [...modalsListActive][modalsListActive.size - 1];
             if (lastModal.isTranslating) {
                 return;
             }
             lastModal.hide({ event });
         }
     };
-    show = async ({ args, event }) => {
+    show = async ({ args, event } = {}) => {
         if (this.isTranslating || this.isActive) {
             return;
         }
@@ -123,14 +123,13 @@ class Modal {
             },
         });
         await animation.promise;
-        document.removeEventListener('keydown', this.handleDocumentKeyDown);
-        document.addEventListener('keydown', this.handleDocumentKeyDown);
+        document.addEventListener(DEFAULT_EVENT_KEYDOWN, this.handleDocumentKeyDown);
         this.firstFocusableElement.focus();
-        window.welpodron.modalsListActive.add(this);
+        modalsListActive.add(this);
         this.isTranslating = false;
         this.isActive = true;
     };
-    hide = async ({ args, event }) => {
+    hide = async ({ args, event } = {}) => {
         if (this.isTranslating || !this.isActive) {
             return;
         }
@@ -143,22 +142,24 @@ class Modal {
         });
         await animation.promise;
         this.element.style.display = 'none';
-        window.welpodron.modalsListActive.delete(this);
-        if (!window.welpodron.modalsListActive.size) {
+        modalsListActive.delete(this);
+        if (!modalsListActive.size) {
             document.body.style.removeProperty('overflow');
             document.body.style.removeProperty('touch-action');
         }
-        document.removeEventListener('keydown', this.handleDocumentKeyDown);
+        document.removeEventListener(DEFAULT_EVENT_KEYDOWN, this.handleDocumentKeyDown);
         this.lastFocusedElement?.focus();
         if (document.activeElement !== this.lastFocusedElement) {
             // Допустим кнопка стала не активной у другого модального окна
-            if (window.welpodron.modalsListActive.size) {
-                const lastModal = [...window.welpodron.modalsListActive].pop();
-                lastModal.firstFocusableElement.focus();
+            if (modalsListActive.size) {
+                const lastModal = [...modalsListActive].pop();
+                if (lastModal) {
+                    lastModal.firstFocusableElement.focus();
+                }
             }
         }
         if (this.isOnce) {
-            document.removeEventListener('click', this.handleDocumentClick);
+            document.removeEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
             this.element.remove();
         }
         this.isTranslating = false;
@@ -166,4 +167,4 @@ class Modal {
     };
 }
 
-export { Modal as modal };
+export { Modal as modal, modalsListActive };

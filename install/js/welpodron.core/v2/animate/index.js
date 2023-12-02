@@ -1,7 +1,7 @@
-import { deferred } from '../utils/index.js';
+import { utils } from '../utils/index.js';
 
 const animate = ({ element, callback, }) => {
-    const promise = deferred();
+    const promise = utils.deferred();
     callback();
     const timer = setTimeout(() => {
         element.addEventListener('transitionend', () => {

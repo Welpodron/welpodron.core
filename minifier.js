@@ -54,7 +54,42 @@
     // Получить имя файла без расширения
     const fileName = path.basename(file, '.js');
 
-    const content = await fs.readFile(file, 'utf8');
+    let content = await fs.readFile(file, 'utf8');
+
+    //! TODO: Refactor this if stable
+    // REPLACE TEST START
+    // ROLLUP
+    content = content.replace(/this.window = this.window \|\| {};/g, '');
+    // GENERIC
+    content = content.replace(/supportedActions/g, 'spAc');
+    content = content.replace(/element/, 'el');
+    content = content.replace(/this.element/g, 'this.el');
+    content = content.replace(/\banimation\b/g, 'an');
+    // HANDLERS
+    content = content.replace(/handleDocumentKeyDown/g, 'hDKD');
+    content = content.replace(/handleDocumentClick/g, 'hDC');
+    content = content.replace(/handleElementTouchMove/g, 'hETM');
+    content = content.replace(/handleElementTouchEnd/g, 'hETE');
+    content = content.replace(/handleElementTouchStart/g, 'hETS');
+    // STATE
+    content = content.replace(/isTranslating/g, 'isTr');
+    content = content.replace(/isActive/g, 'isAc');
+    // MODAL
+    content = content.replace(/firstFocusableElement/g, 'fFE');
+    content = content.replace(/lastFocusedElement/g, 'lFdE');
+    content = content.replace(/lastFocusableElement/g, 'lFeE');
+    // CAROUSEL
+    content = content.replace(/items\;/, 'its');
+    content = content.replace(/this.items/g, 'this.its');
+    content = content.replace(/touchStartX/g, 'tSX');
+    content = content.replace(/touchDeltaX/g, 'tDX');
+    content = content.replace(/swipeThreshold/g, 'sTh');
+    content = content.replace(/currentItemIndex/g, 'cItIn');
+    content = content.replace(/nextItemIndex/g, 'nItIn');
+    content = content.replace(/getNextItem/g, 'gNIt');
+    content = content.replace(/getNextDirection/g, 'gNDi');
+    content = content.replace(/clearAttributes/g, 'cA');
+    // REPLACE TEST END
 
     const sourceMapOptions = {
       filename: `${fileName}.min.js`,
@@ -72,14 +107,24 @@
       }
     } catch (error) {}
 
+    const minifyOptions = {
+      warnings: false,
+      sourceMap: sourceMapOptions,
+    };
+
+    if (fileName.endsWith('.iife')) {
+      //! Атрибуты идут в виде: ЧТО_ПОМЕНЯТЬ_1,ЧТО_ПОМЕНЯТЬ_2:НА_ЧТО_ПОМЕНЯТЬ_1,НА_ЧТО_ПОМЕНЯТЬ_2
+      // minifyOptions.enclose = 'window,document:window,document';
+      if (content.includes('document')) {
+        minifyOptions.enclose = 'document:document';
+      }
+    }
+
     const result = UglifyJS.minify(
       {
         [`${fileName}.js`]: content,
       },
-      {
-        warnings: true,
-        sourceMap: sourceMapOptions,
-      }
+      minifyOptions
     );
 
     if (result.error) {
