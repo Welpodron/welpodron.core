@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Welpodron/welpodron.core#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.5",
+    "archiver": "^6.0.1",
     "csso": "^5.0.5",
     "rollup": "^4.6.1",
     "tslib": "^2.6.2",
