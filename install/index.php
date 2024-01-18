@@ -1,14 +1,13 @@
 <?
 
 use Bitrix\Main\ModuleManager;
-use Bitrix\Main\EventManager;
-use Bitrix\Main\Loader;
 use Bitrix\Main\Application;
 use Bitrix\Main\IO\Directory;
-use Bitrix\Main\Config\Option;
 
 class welpodron_core extends CModule
 {
+    var $MODULE_ID = 'welpodron.core';
+
     public function DoInstall()
     {
         global $APPLICATION;
@@ -45,7 +44,12 @@ class welpodron_core extends CModule
         $this->MODULE_DESCRIPTION = 'Модуль welpodron.core';
         $this->PARTNER_NAME = 'welpodron';
         $this->PARTNER_URI = 'https://github.com/Welpodron';
-        $this->MODULE_VERSION = '2.0.0';
+
+        $arModuleVersion = [];
+        include(__DIR__ . "/version.php");
+
+        $this->MODULE_VERSION = $arModuleVersion["VERSION"];
+        $this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
     }
 
     public function InstallFiles()
@@ -53,12 +57,13 @@ class welpodron_core extends CModule
         global $APPLICATION;
 
         try {
-            if (!CopyDirFiles(__DIR__ . '/js/', Application::getDocumentRoot() . '/bitrix/js', true, true)) {
-                $APPLICATION->ThrowException('Не удалось скопировать js');
+            if (!CopyDirFiles(__DIR__ . '/packages/', Application::getDocumentRoot() . '/local/packages', true, true)) {
+                $APPLICATION->ThrowException('Не удалось скопировать используемый модулем пакет');
                 return false;
             };
-            if (!CopyDirFiles(__DIR__ . '/css/', Application::getDocumentRoot() . '/bitrix/css', true, true)) {
-                $APPLICATION->ThrowException('Не удалось скопировать css');
+            // Тут конечно не оч что компоненты не удаляются ну велл, можно руками удалить
+            if (!CopyDirFiles(__DIR__ . '/components/', Application::getDocumentRoot() . '/local/components', true, true)) {
+                $APPLICATION->ThrowException('Не удалось скопировать компоненты модуля');
                 return false;
             };
         } catch (\Throwable $th) {
@@ -71,19 +76,17 @@ class welpodron_core extends CModule
 
     public function UnInstallFiles()
     {
-        Directory::deleteDirectory(Application::getDocumentRoot() . '/bitrix/js/' . $this->MODULE_ID);
-        Directory::deleteDirectory(Application::getDocumentRoot() . '/bitrix/css/' . $this->MODULE_ID);
+        // Можно было бы проверять пустая ли папка и если да то сносить ее, но лучше оставить так
+        Directory::deleteDirectory(Application::getDocumentRoot() . '/local/packages/' . $this->MODULE_ID);
+
+        $arComponents = scandir(__DIR__ . '/components/welpodron');
+
+        if ($arComponents) {
+            $arComponents = array_diff($arComponents, ['..', '.']);
+
+            foreach ($arComponents as $component) {
+                Directory::deleteDirectory(Application::getDocumentRoot() . '/local/components/welpodron/' . $component);
+            }
+        }
     }
-
-    // public function InstallEvents()
-    // {
-    //     $eventManager = EventManager::getInstance();
-    //     $eventManager->registerEventHandler('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'Welpodron\Core\Helper', 'onBuildGlobalMenu');
-    // }
-
-    // public function UnInstallEvents()
-    // {
-    //     $eventManager = EventManager::getInstance();
-    //     $eventManager->unRegisterEventHandler('main', 'onBuildGlobalMenu', $this->MODULE_ID);
-    // }
 }

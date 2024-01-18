@@ -1,0 +1,4 @@
+tsconfig.*
+ts/
+*.tgz
+*.min.*

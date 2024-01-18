@@ -1,0 +1,31 @@
+{
+    "name": "welpodron.core",
+    "version": "2.1.0",
+    "description": "Js и css библиотека Bitrix модуля welpodron.core",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Welpodron/welpodron.core.git"
+    },
+    "keywords": [
+      "bitrix"
+    ],
+    "main": "./cjs/index.js",
+    "module": "./es/index.js",
+    "types": "./types/index.d.ts",
+    "author": {
+      "name": "Danill Salip",
+      "email": "welpodron@gmail.com",
+      "url": "https://github.com/Welpodron"
+    },
+    "exports": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.js",
+      "default": "./cjs/index.js"
+    },
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/Welpodron/welpodron.core/issues"
+    },
+    "homepage": "https://github.com/Welpodron/welpodron.core#readme"
+  }
+  

@@ -23,7 +23,12 @@ const archive = archiver('zip', {
 });
 
 output.on('close', () => {
-  console.log(archive.pointer() + ' байт');
+  console.log(
+    path.resolve(`./.build/${MODULE_NAME}.zip`) +
+      ' : ' +
+      archive.pointer() +
+      ' байт'
+  );
 });
 
 archive.on('warning', (err) => {

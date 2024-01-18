@@ -42,7 +42,7 @@
       )
     );
 
-  await walk('./install/js', '.js');
+  await walk(path.resolve('./install/packages/welpodron.core/iife'), '.js');
 
   /**
    * @param {string} file
@@ -60,6 +60,49 @@
     // REPLACE TEST START
     // ROLLUP
     content = content.replace(/this.window = this.window \|\| {};/g, '');
+    // ES6 MODULES REPLACE
+    //! WARNING ORDER IS IMPORTANT
+    content = content.replace(/ATTRIBUTE_ACTION_FLUSH/g, 'A_A_F');
+    content = content.replace(/ATTRIBUTE_ACTION_ARGS/g, 'A_A_A');
+    content = content.replace(/ATTRIBUTE_ACTION/g, 'A_A');
+
+    content = content.replace(/ATTRIBUTE_CONTENT/g, 'A_CON');
+
+    content = content.replace(
+      /ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT/g,
+      'A_I_T_F_L'
+    );
+    content = content.replace(
+      /ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT/g,
+      'A_I_T_T_L'
+    );
+    content = content.replace(
+      /ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT/g,
+      'A_I_T_F_R'
+    );
+    content = content.replace(
+      /ATTRIBUTE_ITEM_TRANSLATING_TO_RIGHT/g,
+      'A_I_T_T_R'
+    );
+    content = content.replace(/ATTRIBUTE_ITEM_ACTIVE/g, 'A_I_A');
+    content = content.replace(/ATTRIBUTE_ITEM_ID/g, 'A_I_I');
+    content = content.replace(/ATTRIBUTE_ITEM/g, 'A_I');
+
+    content = content.replace(/ATTRIBUTE_CONTROL_ACTIVE/g, 'A_C_A');
+    content = content.replace(/ATTRIBUTE_CONTROL/g, 'A_C');
+
+    content = content.replace(/ATTRIBUTE_BASE_ACTIVE/g, 'A_B_A');
+    content = content.replace(/ATTRIBUTE_BASE_ONCE/g, 'A_B_O');
+    content = content.replace(/ATTRIBUTE_BASE_ID/g, 'A_B_I');
+    content = content.replace(/ATTRIBUTE_BASE/g, 'A_B');
+    content = content.replace(/MODULE_BASE/g, 'M_B');
+
+    content = content.replace(/DEFAULT_EVENT_CLICK/g, 'D_E_C');
+    content = content.replace(/DEFAULT_EVENT_KEYDOWN/g, 'D_E_KD');
+    content = content.replace(/DEFAULT_EVENT_TOUCHSTART/g, 'D_E_TS');
+    content = content.replace(/DEFAULT_EVENT_TOUCHMOVE/g, 'D_E_TM');
+    content = content.replace(/DEFAULT_EVENT_TOUCHEND/g, 'D_E_TE');
+
     // GENERIC
     content = content.replace(/supportedActions/g, 'spAc');
     content = content.replace(/element/, 'el');
@@ -112,7 +155,7 @@
       sourceMap: sourceMapOptions,
     };
 
-    if (fileName.endsWith('.iife')) {
+    if (file.includes('.iife')) {
       //! Атрибуты идут в виде: ЧТО_ПОМЕНЯТЬ_1,ЧТО_ПОМЕНЯТЬ_2:НА_ЧТО_ПОМЕНЯТЬ_1,НА_ЧТО_ПОМЕНЯТЬ_2
       // minifyOptions.enclose = 'window,document:window,document';
       if (content.includes('document')) {
@@ -163,48 +206,48 @@
 
   await Promise.all(promises);
 
-  files = new Set();
+  // files = new Set();
 
-  await walk('./install/css', '.css');
+  // await walk('./install/css', '.css');
 
-  /**
-   * @param {string} file
-   * @returns Promise<void>
-   */
-  const minifyCSSFile = async (file) => {
-    // Получить директорую файла
-    const dir = path.dirname(file);
-    // Получить имя файла без расширения
-    const fileName = path.basename(file, '.css');
+  // /**
+  //  * @param {string} file
+  //  * @returns Promise<void>
+  //  */
+  // const minifyCSSFile = async (file) => {
+  //   // Получить директорую файла
+  //   const dir = path.dirname(file);
+  //   // Получить имя файла без расширения
+  //   const fileName = path.basename(file, '.css');
 
-    const content = await fs.readFile(file, 'utf8');
+  //   const content = await fs.readFile(file, 'utf8');
 
-    const result = csso.minify(content, {
-      sourceMap: true,
-      filename: fileName + '.css',
-      comments: false,
-    });
+  //   const result = csso.minify(content, {
+  //     sourceMap: true,
+  //     filename: fileName + '.css',
+  //     comments: false,
+  //   });
 
-    // Сохранить минифицированный файл
-    await fs.writeFile(
-      path.join(dir, `${fileName}.min.css`),
-      result.css + `/*# sourceMappingURL=${fileName + '.min.css.map'} */`,
-      'utf8'
-    );
+  //   // Сохранить минифицированный файл
+  //   await fs.writeFile(
+  //     path.join(dir, `${fileName}.min.css`),
+  //     result.css + `/*# sourceMappingURL=${fileName + '.min.css.map'} */`,
+  //     'utf8'
+  //   );
 
-    // Сохранить source map
-    await fs.writeFile(
-      path.join(dir, `${fileName}.min.css.map`),
-      result.map.toString(),
-      'utf8'
-    );
-  };
+  //   // Сохранить source map
+  //   await fs.writeFile(
+  //     path.join(dir, `${fileName}.min.css.map`),
+  //     result.map.toString(),
+  //     'utf8'
+  //   );
+  // };
 
-  promises = [];
+  // promises = [];
 
-  for (let file of files) {
-    promises.push(minifyCSSFile(file));
-  }
+  // for (let file of files) {
+  //   promises.push(minifyCSSFile(file));
+  // }
 
-  await Promise.all(promises);
+  // await Promise.all(promises);
 })();
