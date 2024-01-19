@@ -1,25 +1,26 @@
-import esbuild from 'rollup-plugin-esbuild';
 import path from 'path';
-import { rollup } from 'rollup';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
 import fs from 'fs/promises';
+
+import { rollup } from 'rollup';
+import esbuild from 'rollup-plugin-esbuild';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 (async () => {
   /** @type {import('rollup').RollupBuild | undefined} */
   let bundle;
 
   try {
-    await fs.rm(path.resolve('./install/packages/welpodron.core', 'es'), {
+    await fs.rm(`./es`, {
       recursive: true,
       force: true,
     });
 
-    await fs.rm(path.resolve('./install/packages/welpodron.core', 'cjs'), {
+    await fs.rm(`./cjs`, {
       recursive: true,
       force: true,
     });
 
-    await fs.rm(path.resolve('./install/packages/welpodron.core', 'iife'), {
+    await fs.rm(`./iife`, {
       recursive: true,
       force: true,
     });
@@ -27,13 +28,13 @@ import fs from 'fs/promises';
 
   /** @type {import('rollup').RollupOptions} */
   let inputOptions = {
-    input: path.resolve('./install/packages/welpodron.core/ts/index.ts'),
+    input: `./ts/index.ts`,
     plugins: [
       nodeResolve({ extensions: ['.ts'] }),
       esbuild({
         sourceMap: true,
         target: 'esnext',
-        exclude: ['./types', './es', './cjs'],
+        exclude: ['./types', './es', './cjs', './iife'],
       }),
     ],
   };
@@ -43,14 +44,14 @@ import fs from 'fs/promises';
     {
       format: 'es',
       entryFileNames: '[name].js',
-      dir: path.resolve('./install/packages/welpodron.core', 'es'),
+      dir: `./es`,
       preserveModules: true,
       sourcemap: true,
     },
     {
       format: 'cjs',
       entryFileNames: '[name].js',
-      dir: path.resolve('./install/packages/welpodron.core', 'cjs'),
+      dir: `./cjs`,
       preserveModules: true,
       sourcemap: true,
     },
@@ -60,12 +61,10 @@ import fs from 'fs/promises';
     bundle = await rollup(inputOptions);
     await Promise.all(outputs.map((output) => bundle.write(output)));
   } catch (error) {
-    // buildFailed = true;
     console.error(error);
   }
 
   if (bundle) {
-    // closes the bundle
     await bundle.close();
   }
 
@@ -108,7 +107,7 @@ import fs from 'fs/promises';
       )
     );
 
-  await walk('./install/packages/welpodron.core/ts', 'index.ts');
+  await walk(`./ts`, 'index.ts');
 
   for (let file of files) {
     const inputOptions = {
@@ -136,19 +135,14 @@ import fs from 'fs/promises';
         }),
         sourcemap: true,
         globals: {
-          [path.resolve('./install/packages/welpodron.core/ts/utils/')]:
-            // 'window.welpodron.utils',
-            'window.welpodron',
-          [path.resolve('./install/packages/welpodron.core/ts/animate/')]:
-            'window.welpodron',
+          [path.resolve('./ts/utils/')]: 'window.welpodron',
+          [path.resolve('./ts/animate/')]: 'window.welpodron',
         },
       });
     } catch (error) {
-      // buildFailed = true;
       console.error(error);
     }
     if (bundle) {
-      // closes the bundle
       await bundle.close();
     }
   }

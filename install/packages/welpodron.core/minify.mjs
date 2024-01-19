@@ -1,9 +1,11 @@
-(async () => {
-  const fs = require('fs/promises');
-  const path = require('path');
-  const UglifyJS = require('uglify-js');
-  const csso = require('csso');
+import path from 'path';
+import fs from 'fs/promises';
+import UglifyJS from 'uglify-js';
+import postcss from 'postcss';
+import csso from 'postcss-csso';
+import autoprefixer from 'autoprefixer';
 
+(async () => {
   /** @type {Set<string>} */
   let files = new Set();
 
@@ -42,7 +44,7 @@
       )
     );
 
-  await walk(path.resolve('./install/packages/welpodron.core/iife'), '.js');
+  await walk(path.resolve(`./iife`), '.js');
 
   /**
    * @param {string} file
@@ -62,6 +64,13 @@
     content = content.replace(/this.window = this.window \|\| {};/g, '');
     // ES6 MODULES REPLACE
     //! WARNING ORDER IS IMPORTANT
+
+    //! FORMS API
+    content = content.replace(/responseContainer/g, 'resCont');
+    content = content.replace(/captchaLoaded/g, 'capL');
+    content = content.replace(/captchaKey/g, 'capK');
+    content = content.replace(/isDisabled/g, 'isD');
+
     content = content.replace(/ATTRIBUTE_ACTION_FLUSH/g, 'A_A_F');
     content = content.replace(/ATTRIBUTE_ACTION_ARGS/g, 'A_A_A');
     content = content.replace(/ATTRIBUTE_ACTION/g, 'A_A');
@@ -155,7 +164,7 @@
       sourceMap: sourceMapOptions,
     };
 
-    if (file.includes('.iife')) {
+    if (file.includes('iife')) {
       //! Атрибуты идут в виде: ЧТО_ПОМЕНЯТЬ_1,ЧТО_ПОМЕНЯТЬ_2:НА_ЧТО_ПОМЕНЯТЬ_1,НА_ЧТО_ПОМЕНЯТЬ_2
       // minifyOptions.enclose = 'window,document:window,document';
       if (content.includes('document')) {
@@ -206,48 +215,60 @@
 
   await Promise.all(promises);
 
-  // files = new Set();
+  files = new Set();
 
-  // await walk('./install/css', '.css');
+  await walk('./css', '.css');
 
-  // /**
-  //  * @param {string} file
-  //  * @returns Promise<void>
-  //  */
-  // const minifyCSSFile = async (file) => {
-  //   // Получить директорую файла
-  //   const dir = path.dirname(file);
-  //   // Получить имя файла без расширения
-  //   const fileName = path.basename(file, '.css');
+  /**
+   * @param {string} file
+   * @returns Promise<void>
+   */
+  const minifyCSSFile = async (file) => {
+    // Получить директорую файла
+    const dir = path.dirname(file);
+    // Получить имя файла без расширения
+    const fileName = path.basename(file, '.css');
 
-  //   const content = await fs.readFile(file, 'utf8');
+    const content = await fs.readFile(file, 'utf8');
 
-  //   const result = csso.minify(content, {
-  //     sourceMap: true,
-  //     filename: fileName + '.css',
-  //     comments: false,
-  //   });
+    const result = await postcss([
+      autoprefixer,
+      csso({
+        sourceMap: true,
+        filename: fileName + '.css',
+        comments: false,
+      }),
+    ]).process(content, {
+      from: fileName + '.css',
+      to: `${fileName}.min.css`,
+      map: {
+        inline: false,
+        annotation: false,
+      },
+    });
 
-  //   // Сохранить минифицированный файл
-  //   await fs.writeFile(
-  //     path.join(dir, `${fileName}.min.css`),
-  //     result.css + `/*# sourceMappingURL=${fileName + '.min.css.map'} */`,
-  //     'utf8'
-  //   );
+    // Сохранить минифицированный файл
+    await fs.writeFile(
+      path.join(dir, `${fileName}.min.css`),
+      result.css + `/*# sourceMappingURL=${fileName + '.min.css.map'} */`,
+      'utf8'
+    );
 
-  //   // Сохранить source map
-  //   await fs.writeFile(
-  //     path.join(dir, `${fileName}.min.css.map`),
-  //     result.map.toString(),
-  //     'utf8'
-  //   );
-  // };
+    if (result.map) {
+      // Сохранить source map
+      await fs.writeFile(
+        path.join(dir, `${fileName}.min.css.map`),
+        result.map.toString(),
+        'utf8'
+      );
+    }
+  };
 
-  // promises = [];
+  promises = [];
 
-  // for (let file of files) {
-  //   promises.push(minifyCSSFile(file));
-  // }
+  for (let file of files) {
+    promises.push(minifyCSSFile(file));
+  }
 
-  // await Promise.all(promises);
+  await Promise.all(promises);
 })();

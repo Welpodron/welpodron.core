@@ -3,10 +3,9 @@
   "version": "2.1.0",
   "description": "Данный модуль предназначен для работы с другими модулями, компонентами, а также js и css библиотекой ядра",
   "scripts": {
-    "bundle": "node bundler.mjs",
-    "minify": "node minifier.js",
-    "build": "node builder.js",
-    "compile": "npm run bundle && npm run minify && npm run build"
+    "build:package": "cd ./install/packages/welpodron.core && npm install && npm run compile",
+    "build:module": "node build.mjs",
+    "build": "npm run build:package && npm run build:module"
   },
   "repository": {
     "type": "git",
@@ -26,13 +25,7 @@
   },
   "homepage": "https://github.com/Welpodron/welpodron.core#readme",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.5",
     "archiver": "^6.0.1",
-    "csso": "^5.0.5",
-    "rollup": "^4.6.1",
-    "rollup-plugin-esbuild": "^6.1.0",
-    "tslib": "^2.6.2",
-    "uglify-js": "^3.17.4"
+    "fast-glob": "^3.3.2"
   }
 }

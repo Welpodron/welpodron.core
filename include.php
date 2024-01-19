@@ -59,6 +59,22 @@ CJSCore::RegisterExt('welpodron.core.collapse', [
     'skip_core' => true
 ]);
 
+//! FORMS API WILL BE CHANGED IN FUTURE
+CJSCore::RegisterExt('welpodron.form.inputs.tel', [
+    'js' => '/local/packages/welpodron.core/iife/_form/_tel/index.js',
+    'skip_core' => true
+]);
+
+CJSCore::RegisterExt('welpodron.form.inputs.number', [
+    'js' => '/local/packages/welpodron.core/iife/_form/_number/index.js',
+    'skip_core' => true
+]);
+
+CJSCore::RegisterExt('welpodron.form.inputs.calendar', [
+    'js' => '/local/packages/welpodron.core/iife/_form/_calendar/index.js',
+    'skip_core' => true
+]);
+
 Loader::registerAutoLoadClasses(
     'welpodron.core',
     [

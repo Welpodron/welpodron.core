@@ -7,58 +7,71 @@ const ATTRIBUTE_BASE_DELAY = `${ATTRIBUTE_BASE}-delay`;
 const ATTRIBUTE_BASE_ANIMATED = `${ATTRIBUTE_BASE}-animated`;
 const ATTRIBUTE_BASE_ANIMATING = `${ATTRIBUTE_BASE}-animating`;
 
-const animate = (element: HTMLElement) => {
-  const delay = parseInt(element.getAttribute(ATTRIBUTE_BASE_DELAY) ?? '0');
+class AOS {
+  observer?: IntersectionObserver;
 
-  if (
-    !isNaN(delay) &&
-    delay > 0 &&
-    !element.hasAttribute(ATTRIBUTE_BASE_ANIMATED) &&
-    !element.hasAttribute(ATTRIBUTE_BASE_ANIMATING)
-  ) {
-    element.setAttribute(ATTRIBUTE_BASE_ANIMATING, '');
-    setTimeout(() => {
+  constructor() {
+    if ((AOS as any).instance) {
+      return (AOS as any).instance;
+    }
+
+    if ('IntersectionObserver' in window) {
+      this.observer = new IntersectionObserver(
+        (
+          entries: IntersectionObserverEntry[],
+          observer: IntersectionObserver
+        ) => {
+          entries.forEach((entry) => {
+            if (entry.intersectionRatio >= 0.5) {
+              observer.unobserve(entry.target);
+              this.animate(entry.target as HTMLElement);
+            }
+          });
+        },
+        {
+          root: null,
+          rootMargin: '0% 50%',
+          threshold: 0.5,
+        }
+      );
+    }
+  }
+
+  animate = (element: HTMLElement) => {
+    const delay = parseInt(element.getAttribute(ATTRIBUTE_BASE_DELAY) ?? '0');
+
+    if (
+      !isNaN(delay) &&
+      delay > 0 &&
+      !element.hasAttribute(ATTRIBUTE_BASE_ANIMATED) &&
+      !element.hasAttribute(ATTRIBUTE_BASE_ANIMATING)
+    ) {
+      element.setAttribute(ATTRIBUTE_BASE_ANIMATING, '');
+      setTimeout(() => {
+        element.removeAttribute(ATTRIBUTE_BASE_ANIMATING);
+        element.setAttribute(ATTRIBUTE_BASE_ANIMATED, '');
+      }, delay);
+    } else {
       element.removeAttribute(ATTRIBUTE_BASE_ANIMATING);
       element.setAttribute(ATTRIBUTE_BASE_ANIMATED, '');
-    }, delay);
-  } else {
-    element.removeAttribute(ATTRIBUTE_BASE_ANIMATING);
-    element.setAttribute(ATTRIBUTE_BASE_ANIMATED, '');
-  }
-};
+    }
+  };
 
-const OBSERVER = new IntersectionObserver(
-  (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
-    entries.forEach((entry) => {
-      if (entry.intersectionRatio >= 0.5) {
-        observer.unobserve(entry.target);
-        animate(entry.target as HTMLElement);
-      }
-    });
-  },
-  {
-    root: null,
-    rootMargin: '0% 50%',
-    threshold: 0.5,
-  }
-);
+  update = () => {
+    if (!this.observer) {
+      return;
+    }
 
-const update = () => {
-  OBSERVER.disconnect();
+    this.observer.disconnect();
 
-  document
-    .querySelectorAll(
-      `[${ATTRIBUTE_BASE}]:not([${ATTRIBUTE_BASE_ANIMATED}]):not([${ATTRIBUTE_BASE_ANIMATING}])`
-    )
-    .forEach((element) => {
-      OBSERVER.observe(element);
-    });
-};
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_BASE}]:not([${ATTRIBUTE_BASE_ANIMATED}]):not([${ATTRIBUTE_BASE_ANIMATING}])`
+      )
+      .forEach((element) => {
+        this.observer?.observe(element);
+      });
+  };
+}
 
-const aos = {
-  observer: OBSERVER,
-  update,
-  animate,
-};
-
-export { aos };
+export { AOS as aos };
