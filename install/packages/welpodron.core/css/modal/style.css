@@ -1,0 +1,40 @@
+[data-w-modal] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 7000;
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  transition: visibility 0s 0.4s, opacity 0.4s;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+}
+
+[data-w-modal-active] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: all;
+  user-select: auto;
+  transition: visibility 0s, opacity 0.4s;
+}
+
+[data-w-modal-content] {
+  position: relative;
+  max-height: 100%;
+  background: #fff;
+  max-width: 100%;
+  overflow: auto;
+  transform: translateY(10px);
+  transition: transform 0.3s;
+}
+
+[data-w-modal-active] [data-w-modal-content] {
+  transform: translateY(0);
+}

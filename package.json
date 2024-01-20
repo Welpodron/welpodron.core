@@ -1,24 +1,31 @@
 {
   "name": "welpodron.core",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Данный модуль предназначен для работы с другими модулями, компонентами, а также js и css библиотекой ядра",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:package": "cd ./install/packages/welpodron.core && npm install && npm run compile",
+    "build:module": "node build.mjs",
+    "build": "npm run build:package && npm run build:module"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Welpodron/welpodron.core.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "bitrix"
+  ],
+  "author": {
+    "name": "Danill Salip",
+    "email": "welpodron@gmail.com",
+    "url": "https://github.com/Welpodron"
+  },
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Welpodron/welpodron.core/issues"
   },
   "homepage": "https://github.com/Welpodron/welpodron.core#readme",
   "devDependencies": {
-    "csso": "^5.0.5",
-    "uglify-js": "^3.17.4"
+    "archiver": "^6.0.1",
+    "fast-glob": "^3.3.2"
   }
 }

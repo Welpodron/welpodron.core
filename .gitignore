@@ -1,3 +1,16 @@
 .vscode
 node_modules
+*.cache
 tests
+.build
+*.tgz
+*.tsbuildinfo
+*.min.css
+*.min.js
+*.map
+*.d.ts
+*.js
+iife
+es
+cjs
+types

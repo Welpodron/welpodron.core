@@ -1,0 +1,49 @@
+[data-w-carousel] {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-w-carousel-item] {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  margin-left: -100%;
+  transform: translateX(100%);
+
+  visibility: hidden;
+
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+[data-w-carousel-item-active] {
+  visibility: visible;
+  pointer-events: all;
+  user-select: auto;
+}
+
+[data-w-carousel-item-translating-to-left] {
+  transform: translateX(0%);
+}
+
+[data-w-carousel-item-translating-from-left] {
+  transform: translateX(0%);
+  transition: transform 0s;
+}
+
+[data-w-carousel-item-translating-to-right] {
+  transform: translateX(200%);
+}
+
+[data-w-carousel-item-translating-from-right] {
+  transform: translateX(200%);
+  transition: transform 0s;
+}
