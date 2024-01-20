@@ -1,8 +1,8 @@
 const deferred = <T = unknown>(): Promise<T> & {
   resolve: (value?: T | PromiseLike<T>) => void;
 } => {
-  let resolver, promise;
-  promise = new Promise<T>((resolve, reject) => {
+  let resolver;
+  const promise = new Promise<T>((resolve) => {
     resolver = resolve;
   });
   (

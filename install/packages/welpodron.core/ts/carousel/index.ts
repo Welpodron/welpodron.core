@@ -23,19 +23,13 @@ const DEFAULT_EVENT_TOUCHMOVE = 'touchmove';
 const DEFAULT_EVENT_TOUCHEND = 'touchend';
 const DEFAULT_EVENT_CLICK = 'click';
 
-type CarouselConfigType = {};
-
 type CarouselPropsType = {
   element: HTMLElement;
-  config?: CarouselConfigType;
 };
-
-type CarouselItemConfigType = {};
 
 type CarouselItemPropsType = {
   element: HTMLElement;
   carousel: Carousel;
-  config?: CarouselItemConfigType;
 };
 
 // data-carousel-id
@@ -48,7 +42,7 @@ class CarouselItem {
 
   element: HTMLElement;
 
-  constructor({ element, carousel, config = {} }: CarouselItemPropsType) {
+  constructor({ element, carousel }: CarouselItemPropsType) {
     this.element = element;
     this.carousel = carousel;
   }
@@ -60,7 +54,7 @@ class CarouselItem {
     this.element.removeAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT);
   };
 
-  show = ({ args, event }: { args?: unknown; event?: Event }) => {
+  show = ({ args }: { args?: unknown; event?: Event }) => {
     // args is direction
     if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
       return;
@@ -93,7 +87,7 @@ class CarouselItem {
     }
   };
 
-  hide = ({ args, event }: { args?: unknown; event?: Event }) => {
+  hide = ({ args }: { args?: unknown; event?: Event }) => {
     if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
       return;
     }
@@ -135,7 +129,7 @@ class Carousel {
   currentItemIndex = -1;
   nextItemIndex = -1;
 
-  constructor({ element, config = {} }: CarouselPropsType) {
+  constructor({ element }: CarouselPropsType) {
     this.element = element;
 
     document.addEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
@@ -184,7 +178,7 @@ class Carousel {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       return actionFunc({
@@ -350,9 +344,7 @@ class Carousel {
 
 export {
   Carousel as carousel,
-  CarouselConfigType,
   CarouselPropsType,
   CarouselItem as carouselItem,
-  CarouselItemConfigType,
   CarouselItemPropsType,
 };

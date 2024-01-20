@@ -1,5 +1,3 @@
-//! TODO: Возможно стоит https://css-tricks.com/how-to-animate-the-details-element/
-
 import { animate } from '../animate';
 
 const MODULE_BASE = 'collapse';
@@ -10,14 +8,10 @@ const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
 const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
 const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-type CollapseConfigType = {};
 
 type CollapsePropsType = {
   element: HTMLElement;
-  config?: CollapseConfigType;
 };
 
 class Collapse {
@@ -32,7 +26,7 @@ class Collapse {
     timer: number;
   } | null = null;
 
-  constructor({ element, config = {} }: CollapsePropsType) {
+  constructor({ element }: CollapsePropsType) {
     this.element = element;
 
     document.addEventListener('click', this.handleDocumentClick);
@@ -59,8 +53,6 @@ class Collapse {
       ATTRIBUTE_ACTION
     ) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
-
     const actionFlush = (target as Element).getAttribute(
       ATTRIBUTE_ACTION_FLUSH
     );
@@ -73,17 +65,14 @@ class Collapse {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
-      return actionFunc({
-        args: actionArgs,
-        event,
-      });
+      return actionFunc();
     }
   };
 
-  show = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  show = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -95,7 +84,7 @@ class Collapse {
     const controls = document.querySelectorAll(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
-      )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
+      )}"][${ATTRIBUTE_CONTROL}]`
     );
 
     controls.forEach((control) => {
@@ -121,7 +110,7 @@ class Collapse {
     this.animation = null;
   };
 
-  hide = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  hide = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -142,7 +131,7 @@ class Collapse {
         const controls = document.querySelectorAll(
           `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
             `${ATTRIBUTE_BASE_ID}`
-          )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
+          )}"][${ATTRIBUTE_CONTROL}]`
         );
 
         controls.forEach((control) => {
@@ -161,15 +150,15 @@ class Collapse {
     this.animation = null;
   };
 
-  toggle = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  toggle = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
 
     return this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null
-      ? this.hide({ args, event })
-      : this.show({ args, event });
+      ? this.hide()
+      : this.show();
   };
 }
 
-export { Collapse as collapse, CollapseConfigType, CollapsePropsType };
+export { Collapse as collapse, CollapsePropsType };

@@ -9,7 +9,6 @@ const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_BASE_ONCE = `${ATTRIBUTE_BASE}-once`;
 const ATTRIBUTE_CONTENT = `${ATTRIBUTE_BASE}-content`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
 const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
 const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
@@ -81,7 +80,7 @@ class Modal {
     }
 
     if (target === this.element) {
-      return this.hide({ event });
+      return this.hide();
     }
 
     target = (target as Element).closest(
@@ -112,7 +111,7 @@ class Modal {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       if (!this.element.contains(target as Node)) {
@@ -144,8 +143,7 @@ class Modal {
     }
   };
 
-  // NOW IT IS SYNC SOOOO NO RACE CONDITIONS
-  show = ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  show = () => {
     if (this.isActive) {
       return;
     }
@@ -176,8 +174,7 @@ class Modal {
     this.isActive = true;
   };
 
-  // NOW IT IS SYNC SOOOO NO RACE CONDITIONS
-  hide = ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  hide = () => {
     if (!this.isActive) {
       return;
     }
