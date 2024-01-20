@@ -9,7 +9,6 @@ tests
 *.min.js
 *.map
 *.d.ts
-*.js
 iife
 es
 cjs
