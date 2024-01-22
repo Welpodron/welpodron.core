@@ -42,7 +42,7 @@ class welpodron_core extends CModule
         $this->MODULE_ID = 'welpodron.core';
         $this->MODULE_NAME = 'Модуль welpodron.core';
         $this->MODULE_DESCRIPTION = 'Модуль welpodron.core';
-        $this->PARTNER_NAME = 'welpodron';
+        $this->PARTNER_NAME = 'Welpodron';
         $this->PARTNER_URI = 'https://github.com/Welpodron';
 
         $arModuleVersion = [];
