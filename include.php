@@ -62,6 +62,10 @@ CJSCore::RegisterExt('welpodron.core.collapse', [
 Loader::registerAutoLoadClasses(
     'welpodron.core',
     [
+        'Welpodron\Core\Utils\Buffer' => 'lib/utils/buffer.php',
+        'Welpodron\Core\ORM\Fields\HTMLTextField' => 'lib/orm/fields.php',
+        'Welpodron\Core\ORM\Fields\TextFieldMultiple' => 'lib/orm/fields.php',
+        'Welpodron\Core\ORM\Fields\HTMLTextFieldMultiple' => 'lib/orm/fields.php',
         'Welpodron\Core\Helper' => 'lib/helper/helper.php',
     ]
 );

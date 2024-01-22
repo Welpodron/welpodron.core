@@ -8,10 +8,12 @@ use Bitrix\Main\Grid\Options as GridOptions;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use Bitrix\Main\ORM\Fields\ArrayField;
 use Bitrix\Main\ORM\Fields\StringField;
-use Welpodron\SeoCities\Types\HTMLTextFieldMultiple;
-use Welpodron\SeoCities\Types\TextFieldMultiple;
+use Welpodron\Core\ORM\Fields\HTMLTextFieldMultiple;
+use Welpodron\Core\ORM\Fields\TextFieldMultiple;
 
-// use Welpodron\SeoCities\CityTable as GridTable;
+if (!Loader::includeModule('welpodron.core')) {
+	throw new Exception('Модуль welpodron.core не найден');
+}
 
 if (!defined("B_PROLOG_INCLUDED") || constant('B_PROLOG_INCLUDED') !== true) {
 	die();
