@@ -13,19 +13,13 @@ const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
 const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
-type TabsConfigType = {};
-
 type TabsPropsType = {
   element: HTMLElement;
-  config?: TabsConfigType;
 };
-
-type TabsItemConfigType = {};
 
 type TabsItemPropsType = {
   element: HTMLElement;
   tabs: Tabs;
-  config?: TabsItemConfigType;
 };
 
 // data-tabs-id
@@ -45,12 +39,12 @@ class TabsItem {
     timer: number;
   } | null = null;
 
-  constructor({ element, tabs, config = {} }: TabsItemPropsType) {
+  constructor({ element, tabs }: TabsItemPropsType) {
     this.element = element;
     this.tabs = tabs;
   }
 
-  show = async ({ args, event }: { args?: unknown; event?: Event }) => {
+  show = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -89,7 +83,7 @@ class TabsItem {
     this.animation = null;
   };
 
-  hide = async ({ args, event }: { args?: unknown; event?: Event }) => {
+  hide = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -128,7 +122,7 @@ class Tabs {
 
   _items: TabsItem[] = [];
 
-  constructor({ element, config = {} }: TabsPropsType) {
+  constructor({ element }: TabsPropsType) {
     this.element = element;
 
     document.addEventListener('click', this.handleDocumentClick);
@@ -169,7 +163,7 @@ class Tabs {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       return actionFunc({
@@ -179,7 +173,7 @@ class Tabs {
     }
   };
 
-  show = async ({ args, event }: { args?: unknown; event?: Event }) => {
+  show = async ({ args }: { args?: unknown; event?: Event }) => {
     if (!args) {
       return;
     }
@@ -206,7 +200,7 @@ class Tabs {
       return;
     }
 
-    for (let _item of this._items) {
+    for (const _item of this._items) {
       if (_item.animation) {
         clearTimeout(_item.animation.timer);
       }
@@ -221,11 +215,11 @@ class Tabs {
 
     const promises = [];
 
-    for (let _item of this._items) {
+    for (const _item of this._items) {
       if (_item.element === item) {
-        promises.push(_item.show({ args, event }));
+        promises.push(_item.show());
       } else {
-        promises.push(_item.hide({ args, event }));
+        promises.push(_item.hide());
       }
     }
 
@@ -233,11 +227,4 @@ class Tabs {
   };
 }
 
-export {
-  Tabs as tabs,
-  TabsConfigType,
-  TabsPropsType,
-  TabsItem as tabsItem,
-  TabsItemPropsType,
-  TabsItemConfigType,
-};
+export { Tabs as tabs, TabsPropsType, TabsItem as tabsItem, TabsItemPropsType };

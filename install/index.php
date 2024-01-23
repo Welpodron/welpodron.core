@@ -4,6 +4,8 @@ use Bitrix\Main\ModuleManager;
 use Bitrix\Main\Application;
 use Bitrix\Main\IO\Directory;
 
+use Bitrix\Main\EventManager;
+
 class welpodron_core extends CModule
 {
     var $MODULE_ID = 'welpodron.core';
@@ -21,6 +23,10 @@ class welpodron_core extends CModule
             return false;
         }
 
+        if (!$this->InstallEvents()) {
+            return false;
+        }
+
         ModuleManager::registerModule($this->MODULE_ID);
 
         $APPLICATION->IncludeAdminFile('Установка модуля ' . $this->MODULE_ID, __DIR__ . '/step.php');
@@ -31,6 +37,7 @@ class welpodron_core extends CModule
         global $APPLICATION;
 
         $this->UnInstallFiles();
+        $this->UnInstallEvents();
 
         ModuleManager::unRegisterModule($this->MODULE_ID);
 
@@ -42,7 +49,7 @@ class welpodron_core extends CModule
         $this->MODULE_ID = 'welpodron.core';
         $this->MODULE_NAME = 'Модуль welpodron.core';
         $this->MODULE_DESCRIPTION = 'Модуль welpodron.core';
-        $this->PARTNER_NAME = 'welpodron';
+        $this->PARTNER_NAME = 'Welpodron';
         $this->PARTNER_URI = 'https://github.com/Welpodron';
 
         $arModuleVersion = [];
@@ -66,6 +73,10 @@ class welpodron_core extends CModule
                 $APPLICATION->ThrowException('Не удалось скопировать компоненты модуля');
                 return false;
             };
+            if (!CopyDirFiles(__DIR__ . '/panel/', Application::getDocumentRoot() . '/bitrix/panel', true, true)) {
+                $APPLICATION->ThrowException('Не удалось скопировать используемый модулем CSS');
+                return false;
+            };
         } catch (\Throwable $th) {
             $APPLICATION->ThrowException($th->getMessage() . '\n' . $th->getTraceAsString());
             return false;
@@ -76,6 +87,8 @@ class welpodron_core extends CModule
 
     public function UnInstallFiles()
     {
+        Directory::deleteDirectory(Application::getDocumentRoot() . '/bitrix/panel/welpodron');
+
         // Можно было бы проверять пустая ли папка и если да то сносить ее, но лучше оставить так
         Directory::deleteDirectory(Application::getDocumentRoot() . '/local/packages/' . $this->MODULE_ID);
 
@@ -88,5 +101,18 @@ class welpodron_core extends CModule
                 Directory::deleteDirectory(Application::getDocumentRoot() . '/local/components/welpodron/' . $component);
             }
         }
+    }
+
+    public function InstallEvents()
+    {
+        $eventManager = EventManager::getInstance();
+        $eventManager->registerEventHandler('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'Welpodron\Core\Helper', 'onBuildGlobalMenu');
+        return true;
+    }
+
+    public function UnInstallEvents()
+    {
+        $eventManager = EventManager::getInstance();
+        $eventManager->unRegisterEventHandler('main', 'onBuildGlobalMenu', $this->MODULE_ID);
     }
 }

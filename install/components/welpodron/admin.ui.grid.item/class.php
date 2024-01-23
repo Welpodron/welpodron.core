@@ -8,7 +8,6 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\ORM\Fields\ScalarField;
 use Bitrix\Main\Engine\Contract\Controllerable;
 use Bitrix\Main\ORM\Objectify\EntityObject;
-// use Welpodron\Seocities\CityTable as GridTable;
 
 use Bitrix\Main\ORM\EntityError;
 use Bitrix\Main\ORM\Fields\FieldError;
@@ -19,7 +18,6 @@ if (!defined("B_PROLOG_INCLUDED") || constant('B_PROLOG_INCLUDED') !== true) {
 
 class WelpodronAdminUiGridItemComponent extends CBitrixComponent implements Controllerable, Bitrix\Main\Errorable
 {
-	// const MODULE_ID = 'welpodron.seocities';
 	const DEFAULT_FIELD_VALIDATION_ERROR_CODE = "FIELD_VALIDATION_ERROR";
 	const DEFAULT_FORM_GENERAL_ERROR_CODE = "FORM_GENERAL_ERROR";
 	const DEFAULT_REDIRECT_PATH = DIRECTORY_SEPARATOR;

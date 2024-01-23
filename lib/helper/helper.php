@@ -8,18 +8,17 @@ use Bitrix\Main\Loader;
 
 class Helper
 {
-    //     final public static function onBuildGlobalMenu(&$aGlobalMenu, &$aModuleMenu)
-    //     {
-    //         $aGlobalMenu['global_menu_welpodron'] = [
-    //             'menu_id' => 'welpodron',
-    //             'text' => 'Welpodron',
-    //             'title' => 'Настройки параметров составных модулей',
-    //             'sort' => PHP_INT_MAX,
-    //             'items_id' => 'global_menu_welpodron_items',
-    //             'icon'      => '',
-    //             'page_icon' => '',
-    //         ];
-    //     }
+    final public static function onBuildGlobalMenu(&$arGlobalMenu, &$arModuleMenu)
+    {
+        global $APPLICATION;
+
+        $APPLICATION->SetAdditionalCss("/bitrix/panel/welpodron/style.css");
+
+        $arGlobalMenu['welpodron'] = [
+            'menu_id' => 'welpodron',
+            'text' => 'Welpodron',
+        ];
+    }
 
     final public static function buildOptions($moduleId, $arTabs = [])
     {
@@ -68,7 +67,35 @@ class Helper
 
         $i = -1;
 ?>
+        <script>
+            function __SetUrlVar(id, mnu_id, el_id) {
+                var obj_ta = BX(el_id);
+                //IE
+                if (document.selection) {
+                    obj_ta.focus();
+                    var sel = document.selection.createRange();
+                    sel.text = id;
+                    //var range = obj_ta.createTextRange();
+                    //range.move('character', caretPos);
+                    //range.select();
+                }
+                //FF
+                else if (obj_ta.selectionStart || obj_ta.selectionStart == '0') {
+                    var startPos = obj_ta.selectionStart;
+                    var endPos = obj_ta.selectionEnd;
+                    var caretPos = startPos + id.length;
+                    obj_ta.value = obj_ta.value.substring(0, startPos) + id + obj_ta.value.substring(endPos, obj_ta.value.length);
+                    obj_ta.setSelectionRange(caretPos, caretPos);
+                    obj_ta.focus();
+                } else {
+                    obj_ta.value += id;
+                    obj_ta.focus();
+                }
 
+                BX.fireEvent(obj_ta, 'change');
+                obj_ta.focus();
+            }
+        </script>
         <form name=<?= str_replace('.', '_', $moduleId) ?> method='post'>
             <? $tabControl->Begin(); ?>
             <?= bitrix_sessid_post(); ?>
@@ -347,6 +374,19 @@ class Helper
                                     </style>
                                 <? elseif ($arOption['TYPE'] == 'number') : ?>
                                     <input class="adm-input" style="width: 98%;" <? if (isset($arOption['MIN'])) echo 'min="' . $arOption['MIN'] . '"'; ?> <? if ($arOption['REQUIRED'] == "Y") echo "required "; ?> id="<?= $arOption['NAME'] ?>" name="<?= $arOption['NAME'] ?>" type="number" value="<?= $arOption['VALUE'] ?>">
+                                <? elseif ($arOption['TYPE'] == 'url_builder') : ?>
+                                    <div style="display: flex;align-items: center;">
+                                        <input style="min-height: 29px;flex-grow: 1;" <? if ($arOption['REQUIRED'] == "Y") echo "required "; ?> type="text" id="<?= $arOption['NAME'] ?>" name="<?= $arOption['NAME'] ?>" maxlength="255" value="<?= htmlspecialcharsbx($arOption['VALUE']); ?>">
+                                        <input style="flex-shrink: 0;" type="button" id="<?= ("mnu_" . $arOption['NAME']) ?>" value="...">
+                                        <?
+                                        $u = new \CAdminPopupEx(
+                                            "mnu_" . $arOption['NAME'],
+                                            $arOption['POPUP']['OPTIONS'],
+                                            array("zIndex" => 2000)
+                                        );
+                                        $u->Show();
+                                        ?>
+                                    </div>
                                 <? else : ?>
                                     <input style="width: 98%;" <? if ($arOption['REQUIRED'] == "Y") echo "required "; ?> id="<?= $arOption['NAME'] ?>" name="<?= $arOption['NAME'] ?>" type="text" maxlength="255" value="<?= $arOption['VALUE'] ?>">
                                 <? endif; ?>

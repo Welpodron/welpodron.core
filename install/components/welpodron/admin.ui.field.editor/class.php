@@ -6,14 +6,13 @@ use Bitrix\Main\ErrorCollection;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\Loader;
 
-use Welpodron\SeoCities\Utils\Buffer;
+use Welpodron\Core\Utils\Buffer;
 
-if (!defined("B_PROLOG_INCLUDED") || constant('B_PROLOG_INCLUDED') !== true) {
-    die();
+if (!Loader::includeModule('welpodron.core')) {
+    throw new Exception('Модуль welpodron.core не найден');
 }
 
-if (!Loader::includeModule('welpodron.seocities')) {
-    ShowError('Модуль welpodron.seocities не был найден');
+if (!defined("B_PROLOG_INCLUDED") || constant('B_PROLOG_INCLUDED') !== true) {
     die();
 }
 

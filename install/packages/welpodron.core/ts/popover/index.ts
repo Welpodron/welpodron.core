@@ -4,10 +4,7 @@ const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_BASE_HOVERABLE = `${ATTRIBUTE_BASE}-hoverable`;
-const ATTRIBUTE_BASE_ONCE = `${ATTRIBUTE_BASE}-once`;
-const ATTRIBUTE_CONTENT = `${ATTRIBUTE_BASE}-content`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
 const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
 const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
@@ -47,12 +44,12 @@ class Popover {
 
     this.lastFocusedElement = document.activeElement as HTMLElement | null;
 
-    this.resizeObserver = new ResizeObserver((mutations, observer) => {
-      for (const _ of mutations) {
+    this.resizeObserver = new ResizeObserver((mutations) => {
+      mutations.forEach(() => {
         if (this.currentAnchor) {
           this.calculatePosition({ anchor: this.currentAnchor });
         }
-      }
+      });
     });
 
     if (this.isHoverable) {
@@ -72,7 +69,6 @@ class Popover {
       height: anchorHeight,
       left: anchorLeft,
       top: anchorTop,
-      bottom: anchorBottom,
     } = anchor.getBoundingClientRect();
 
     this.element.style.left = anchorLeft + window.scrollX + 'px';
@@ -113,7 +109,7 @@ class Popover {
     // }
   };
 
-  show = async ({ args, event }: { args?: unknown; event?: Event }) => {
+  show = async ({ event }: { args?: unknown; event?: Event }) => {
     if (this.isActive) {
       return;
     }
@@ -152,7 +148,7 @@ class Popover {
     this.isActive = true;
   };
 
-  hide = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  hide = async () => {
     if (!this.isActive) {
       return;
     }
@@ -170,11 +166,11 @@ class Popover {
 
   handleDocumentKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      return this.hide({ event });
+      return this.hide();
     }
   };
 
-  handleWindowResize = (event: Event) => {
+  handleWindowResize = () => {
     if (!this.isActive) {
       return;
     }
@@ -183,7 +179,7 @@ class Popover {
   };
 
   handleDocumentClick = (event: MouseEvent) => {
-    let { target } = event;
+    const { target } = event;
 
     if (!target) {
       return;
@@ -201,7 +197,7 @@ class Popover {
         document.contains(target as Node) &&
         !this.element.contains(target as Node)
       ) {
-        return this.hide({ event });
+        return this.hide();
       }
 
       return;
@@ -225,7 +221,7 @@ class Popover {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       if (!this.element.contains(target as Node)) {
@@ -243,7 +239,7 @@ class Popover {
 
   // Hoverbable
   handleDocumentMouseOver = async (event: MouseEvent) => {
-    let { target } = event;
+    const { target } = event;
 
     if (!target) {
       return;
@@ -277,7 +273,7 @@ class Popover {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       if (!this.element.contains(control)) {
@@ -294,7 +290,7 @@ class Popover {
   };
 
   handleDocumentMouseOut = async (event: MouseEvent) => {
-    let { relatedTarget } = event;
+    const { relatedTarget } = event;
 
     if (this.hoverableLeaveTimeout != null) {
       clearTimeout(this.hoverableLeaveTimeout);
@@ -302,11 +298,11 @@ class Popover {
 
     this.hoverableLeaveTimeout = setTimeout(() => {
       if (!relatedTarget) {
-        return this.hide({});
+        return this.hide();
       }
 
       if (!this.element.contains(relatedTarget as HTMLElement)) {
-        return this.hide({});
+        return this.hide();
       }
     }, 125);
   };

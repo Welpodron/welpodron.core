@@ -13,19 +13,13 @@ const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
 const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
-type AccordionConfigType = {};
-
 type AccordionPropsType = {
   element: HTMLElement;
-  config?: AccordionConfigType;
 };
-
-type AccordionItemConfigType = {};
 
 type AccordionItemPropsType = {
   element: HTMLElement;
   accordion: Accordion;
-  config?: AccordionItemConfigType;
 };
 
 class AccordionItem {
@@ -42,12 +36,12 @@ class AccordionItem {
     timer: number;
   } | null = null;
 
-  constructor({ element, accordion, config = {} }: AccordionItemPropsType) {
+  constructor({ element, accordion }: AccordionItemPropsType) {
     this.element = element;
     this.accordion = accordion;
   }
 
-  show = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  show = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -86,7 +80,7 @@ class AccordionItem {
     this.animation = null;
   };
 
-  hide = async ({ args, event }: { args?: unknown; event?: Event } = {}) => {
+  hide = async () => {
     if (this.animation) {
       clearTimeout(this.animation.timer);
     }
@@ -132,7 +126,7 @@ class Accordion {
 
   element: HTMLElement;
 
-  constructor({ element, config = {} }: AccordionPropsType) {
+  constructor({ element }: AccordionPropsType) {
     this.element = element;
 
     document.addEventListener('click', this.handleDocumentClick);
@@ -173,7 +167,7 @@ class Accordion {
       return;
     }
 
-    const actionFunc = this[action] as any;
+    const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
       return actionFunc({
@@ -183,7 +177,7 @@ class Accordion {
     }
   };
 
-  show = async ({ args, event }: { args?: unknown; event?: Event }) => {
+  show = async ({ args }: { args?: unknown; event?: Event }) => {
     if (!args) {
       return;
     }
@@ -212,16 +206,16 @@ class Accordion {
 
     const promises = [];
 
-    for (let _item of items) {
+    for (const _item of items) {
       const itemInstance = new AccordionItem({
         element: _item as HTMLElement,
         accordion: this,
       });
 
       if (_item === item) {
-        promises.push(itemInstance.show({ args, event }));
+        promises.push(itemInstance.show());
       } else {
-        promises.push(itemInstance.hide({ args, event }));
+        promises.push(itemInstance.hide());
       }
     }
 
@@ -231,9 +225,7 @@ class Accordion {
 
 export {
   Accordion as accordion,
-  AccordionConfigType,
   AccordionPropsType,
   AccordionItem as accordionItem,
-  AccordionItemConfigType,
   AccordionItemPropsType,
 };

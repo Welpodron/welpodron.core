@@ -11,9 +11,11 @@ class AOS {
   observer?: IntersectionObserver;
 
   constructor() {
+    /* eslint-disable */
     if ((AOS as any).instance) {
       return (AOS as any).instance;
     }
+    /* eslint-enable */
 
     if ('IntersectionObserver' in window) {
       this.observer = new IntersectionObserver(
