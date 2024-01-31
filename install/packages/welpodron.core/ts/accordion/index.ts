@@ -1,11 +1,12 @@
+import { ExtractComponentActions } from '../typer';
+
 import { animate } from '../animate';
 
-const MODULE_BASE = 'accordion';
+const COMPONENT_BASE = 'accordion';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
-const ATTRIBUTE_ITEM_ID = `${ATTRIBUTE_ITEM}-id`;
 const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
 const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
@@ -23,8 +24,6 @@ type AccordionItemPropsType = {
 };
 
 class AccordionItem {
-  supportedActions = ['hide', 'show'];
-
   accordion: Accordion;
 
   element: HTMLElement;
@@ -53,15 +52,17 @@ class AccordionItem {
     this.element.style.height = `0px`;
     this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
 
-    const controls = document.querySelectorAll(
-      `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
-        `${ATTRIBUTE_ITEM_ID}`
-      )}"]`
-    );
-
-    controls.forEach((control) => {
-      control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
-    });
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+          `${ATTRIBUTE_ITEM}`
+        )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          `${ATTRIBUTE_BASE_ID}`
+        )}"][${ATTRIBUTE_CONTROL}]`
+      )
+      .forEach((control) => {
+        control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
+      });
 
     // Магичесий хак
     this.element.scrollHeight;
@@ -98,15 +99,17 @@ class AccordionItem {
         this.element.style.height = this.element.scrollHeight + 'px';
         this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
 
-        const controls = document.querySelectorAll(
-          `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
-            `${ATTRIBUTE_ITEM_ID}`
-          )}"]`
-        );
-
-        controls.forEach((control) => {
-          control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
-        });
+        document
+          .querySelectorAll(
+            `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+              `${ATTRIBUTE_ITEM}`
+            )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+              `${ATTRIBUTE_BASE_ID}`
+            )}"][${ATTRIBUTE_CONTROL}]`
+          )
+          .forEach((control) => {
+            control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+          });
 
         this.element.style.height = `0px`;
       },
@@ -122,7 +125,10 @@ class AccordionItem {
 }
 
 class Accordion {
-  supportedActions = ['show'];
+  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<
+    Accordion,
+    ({ args, event }: { args: unknown; event?: Event }) => void
+  >[] = ['show'];
 
   element: HTMLElement;
 
@@ -163,7 +169,12 @@ class Accordion {
       event.preventDefault();
     }
 
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (
+      !action ||
+      !Accordion.SUPPORTED_ACTIONS.includes(
+        action as ExtractComponentActions<Accordion>
+      )
+    ) {
       return;
     }
 
@@ -189,7 +200,7 @@ class Accordion {
     }
 
     const items = this.element.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${accordionId}"][${ATTRIBUTE_ITEM_ID}]`
+      `[${ATTRIBUTE_BASE_ID}="${accordionId}"][${ATTRIBUTE_ITEM}]`
     );
 
     if (!items) {
@@ -197,7 +208,7 @@ class Accordion {
     }
 
     const item = [...items].find((element) => {
-      return element.getAttribute(ATTRIBUTE_ITEM_ID) === args;
+      return element.getAttribute(ATTRIBUTE_ITEM) === args;
     });
 
     if (!item) {

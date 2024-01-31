@@ -1,22 +1,21 @@
 //!Original: https://github.com/michalsnik/aos
 
-const MODULE_BASE = 'aos';
+const COMPONENT_BASE = 'aos';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_DELAY = `${ATTRIBUTE_BASE}-delay`;
 const ATTRIBUTE_BASE_ANIMATED = `${ATTRIBUTE_BASE}-animated`;
 const ATTRIBUTE_BASE_ANIMATING = `${ATTRIBUTE_BASE}-animating`;
 
 class AOS {
+  private static _instance: AOS;
+
   observer?: IntersectionObserver;
 
   constructor() {
-    /* eslint-disable */
-    if ((AOS as any).instance) {
-      return (AOS as any).instance;
+    if (AOS._instance) {
+      return AOS._instance;
     }
-    /* eslint-enable */
-
     if ('IntersectionObserver' in window) {
       this.observer = new IntersectionObserver(
         (

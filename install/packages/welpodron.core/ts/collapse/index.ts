@@ -1,8 +1,10 @@
+import { ExtractComponentActions } from '../typer';
+
 import { animate } from '../animate';
 
-const MODULE_BASE = 'collapse';
+const COMPONENT_BASE = 'collapse';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
@@ -15,7 +17,11 @@ type CollapsePropsType = {
 };
 
 class Collapse {
-  supportedActions = ['hide', 'show', 'toggle'];
+  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<Collapse>[] = [
+    'hide',
+    'show',
+    'toggle',
+  ];
 
   element: HTMLElement;
 
@@ -61,7 +67,12 @@ class Collapse {
       event.preventDefault();
     }
 
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (
+      !action ||
+      !Collapse.SUPPORTED_ACTIONS.includes(
+        action as ExtractComponentActions<Collapse>
+      )
+    ) {
       return;
     }
 

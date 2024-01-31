@@ -1,6 +1,6 @@
-const MODULE_BASE = 'popover';
+const COMPONENT_BASE = 'popover';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_BASE_HOVERABLE = `${ATTRIBUTE_BASE}-hoverable`;

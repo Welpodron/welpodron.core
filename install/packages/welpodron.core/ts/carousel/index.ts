@@ -1,9 +1,11 @@
 //! TODO: v3 Добавить поддержку событий
 //! TODO: v3 Добавить поддержку стрелок
 
-const MODULE_BASE = 'carousel';
+import { ExtractComponentActions } from '../typer';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const COMPONENT_BASE = 'carousel';
+
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
 const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
@@ -32,12 +34,7 @@ type CarouselItemPropsType = {
   carousel: Carousel;
 };
 
-// data-carousel-id
-// data-carousel-item-id
-// data-carousel-item-active
 class CarouselItem {
-  supportedActions = ['hide', 'show'];
-
   carousel: Carousel;
 
   element: HTMLElement;
@@ -116,7 +113,10 @@ class CarouselItem {
 }
 
 class Carousel {
-  supportedActions = ['show'];
+  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<
+    Carousel,
+    ({ args, event }: { args: unknown; event?: Event }) => void
+  >[] = ['show'];
 
   element: HTMLElement;
 
@@ -174,7 +174,12 @@ class Carousel {
       event.preventDefault();
     }
 
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (
+      !action ||
+      !Carousel.SUPPORTED_ACTIONS.includes(
+        action as ExtractComponentActions<Carousel>
+      )
+    ) {
       return;
     }
 

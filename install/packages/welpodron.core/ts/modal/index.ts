@@ -1,9 +1,11 @@
+import { ExtractComponentActions } from '../typer';
+
 // Its cool to write english comments along with russian comments KEK Its like Im a fucking bipolar or smth idk
 const modalsListActive = new Set<Modal>();
 
-const MODULE_BASE = 'modal';
+const COMPONENT_BASE = 'modal';
 
-const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
+const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
 const ATTRIBUTE_BASE_ONCE = `${ATTRIBUTE_BASE}-once`;
@@ -27,7 +29,10 @@ type ModalPropsType = {
 };
 
 class Modal {
-  supportedActions = ['hide', 'show'];
+  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<Modal>[] = [
+    'hide',
+    'show',
+  ];
 
   element: HTMLElement;
 
@@ -107,7 +112,12 @@ class Modal {
       event.preventDefault();
     }
 
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (
+      !action ||
+      !Modal.SUPPORTED_ACTIONS.includes(
+        action as ExtractComponentActions<Modal>
+      )
+    ) {
       return;
     }
 
