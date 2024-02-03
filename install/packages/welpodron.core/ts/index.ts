@@ -8,3 +8,4 @@ export { collapse } from './collapse';
 export { accordion } from './accordion';
 export { tabs } from './tabs';
 export { carousel } from './carousel';
+export { slider } from './_slider';
