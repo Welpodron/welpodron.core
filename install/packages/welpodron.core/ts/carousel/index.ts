@@ -1,47 +1,33 @@
-//! TODO: v3 Добавить поддержку событий
-//! TODO: v3 Добавить поддержку стрелок
+const ATTRIBUTE_BASE_ID = 'data-w-carousel-id';
+const ATTRIBUTE_ITEM = 'data-w-carousel-item';
+const ATTRIBUTE_ITEM_ACTIVE = 'data-w-carousel-item-active';
+const ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT =
+  'data-w-carousel-item-translating-from-left';
+const ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT =
+  'data-w-carousel-item-translating-from-right';
+const ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT =
+  'data-w-carousel-item-translating-to-left';
+const ATTRIBUTE_ITEM_TRANSLATING_TO_RIGHT =
+  'data-w-carousel-item-translating-to-right';
+const ATTRIBUTE_CONTROL = 'data-w-carousel-control';
+const ATTRIBUTE_CONTROL_ACTIVE = 'data-w-carousel-control-active';
+const ATTRIBUTE_ACTION = 'data-w-carousel-action';
+const ATTRIBUTE_ACTION_ARGS = 'data-w-carousel-action-args';
+const ATTRIBUTE_ACTION_FLUSH = 'data-w-carousel-action-flush';
 
-import { ExtractComponentActions } from '../typer';
-
-const COMPONENT_BASE = 'carousel';
-
-const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
-const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
-const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
-const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
-const ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT = `${ATTRIBUTE_ITEM}-translating-from-left`;
-const ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT = `${ATTRIBUTE_ITEM}-translating-from-right`;
-const ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT = `${ATTRIBUTE_ITEM}-translating-to-left`;
-const ATTRIBUTE_ITEM_TRANSLATING_TO_RIGHT = `${ATTRIBUTE_ITEM}-translating-to-right`;
-const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
-const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
-const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-// FOR MINIFICATION PURPOSES
-const DEFAULT_EVENT_TOUCHSTART = 'touchstart';
-const DEFAULT_EVENT_TOUCHMOVE = 'touchmove';
-const DEFAULT_EVENT_TOUCHEND = 'touchend';
-const DEFAULT_EVENT_CLICK = 'click';
-
-type CarouselPropsType = {
-  element: HTMLElement;
+type CarouselPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-type CarouselItemPropsType = {
-  element: HTMLElement;
-  carousel: Carousel;
+type CarouselItemPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-class CarouselItem {
-  carousel: Carousel;
+class CarouselItem<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-  element: HTMLElement;
-
-  constructor({ element, carousel }: CarouselItemPropsType) {
+  constructor({ element }: CarouselItemPropsType<BaseElementType>) {
     this.element = element;
-    this.carousel = carousel;
   }
 
   clearAttributes = () => {
@@ -51,9 +37,9 @@ class CarouselItem {
     this.element.removeAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT);
   };
 
-  show = ({ args }: { args?: unknown; event?: Event }) => {
+  show = ({ args }: { args: 'left' | 'right' }) => {
     // args is direction
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
+    if (this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
       return;
     }
 
@@ -84,8 +70,8 @@ class CarouselItem {
     }
   };
 
-  hide = ({ args }: { args?: unknown; event?: Event }) => {
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
+  hide = ({ args }: { args: 'left' | 'right' }) => {
+    if (!this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
       return;
     }
 
@@ -112,80 +98,64 @@ class CarouselItem {
   };
 }
 
-class Carousel {
-  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<
-    Carousel,
-    ({ args, event }: { args: unknown; event?: Event }) => void
-  >[] = ['show'];
-
-  element: HTMLElement;
+class Carousel<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
   touchStartX = 0;
   touchDeltaX = 0;
   swipeThreshold = 45;
 
-  items: CarouselItem[] = [];
+  items: CarouselItem[] | null = [];
 
   currentItemIndex = -1;
   nextItemIndex = -1;
 
-  constructor({ element }: CarouselPropsType) {
+  constructor({ element }: CarouselPropsType<BaseElementType>) {
     this.element = element;
 
-    document.addEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
+    this.update();
 
-    this.element.addEventListener(
-      DEFAULT_EVENT_TOUCHSTART,
-      this.handleElementTouchStart,
-      {
-        passive: true,
-      }
-    );
+    document.addEventListener('click', this.handleDocumentClick);
+
+    this.element.addEventListener('touchstart', this.handleElementTouchStart, {
+      passive: true,
+    });
   }
 
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
+    const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
 
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
-
-    if (!actionFlush) {
-      event.preventDefault();
-    }
-
-    if (
-      !action ||
-      !Carousel.SUPPORTED_ACTIONS.includes(
-        action as ExtractComponentActions<Carousel>
-      )
-    ) {
+    if (!action) {
       return;
     }
+
+    const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
 
     const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
+      if (!actionFlush) {
+        event.preventDefault();
+      }
+
       return actionFunc({
         args: actionArgs,
         event,
@@ -194,20 +164,12 @@ class Carousel {
   };
 
   handleElementTouchStart = (event: TouchEvent) => {
-    this.element.addEventListener(
-      DEFAULT_EVENT_TOUCHEND,
-      this.handleElementTouchEnd,
-      {
-        once: true,
-      }
-    );
-    this.element.addEventListener(
-      DEFAULT_EVENT_TOUCHMOVE,
-      this.handleElementTouchMove,
-      {
-        passive: true,
-      }
-    );
+    this.element.addEventListener('touchend', this.handleElementTouchEnd, {
+      once: true,
+    });
+    this.element.addEventListener('touchmove', this.handleElementTouchMove, {
+      passive: true,
+    });
 
     this.touchStartX = event.touches[0].clientX;
   };
@@ -219,11 +181,8 @@ class Carousel {
         : event.touches[0].clientX - this.touchStartX;
   };
 
-  handleElementTouchEnd = (event: TouchEvent) => {
-    this.element.removeEventListener(
-      DEFAULT_EVENT_TOUCHMOVE,
-      this.handleElementTouchMove
-    );
+  handleElementTouchEnd = () => {
+    this.element.removeEventListener('touchmove', this.handleElementTouchMove);
     const absDeltaX = Math.abs(this.touchDeltaX);
 
     if (absDeltaX > this.swipeThreshold) {
@@ -231,7 +190,6 @@ class Carousel {
       // if absDeltaX / this.touchDeltaY > 0 slide to right
       this.show({
         args: absDeltaX / this.touchDeltaX < 0 ? 'next' : 'prev',
-        event,
       });
     }
 
@@ -274,6 +232,10 @@ class Carousel {
   };
 
   getNextDirection = () => {
+    if (!this.items || !this.items.length) {
+      return;
+    }
+
     if (this.nextItemIndex === -1 || this.currentItemIndex === -1) {
       return;
     }
@@ -302,31 +264,14 @@ class Carousel {
     return this.nextItemIndex > this.currentItemIndex ? 'left' : 'right';
   };
 
-  show = ({ args, event }: { args: unknown; event?: Event }) => {
+  show = ({ args }: { args: string | number }) => {
     if (!args) {
       return;
     }
 
-    const carouselId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
-
-    if (!carouselId) {
+    if (!this.items || !this.items.length) {
       return;
     }
-
-    const items = this.element.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${carouselId}"][${ATTRIBUTE_ITEM}]`
-    );
-
-    if (!items) {
-      return;
-    }
-
-    this.items = [...items].map((element) => {
-      return new CarouselItem({
-        element: element as HTMLElement,
-        carousel: this,
-      });
-    });
 
     this.getNextItem({ index: args as string });
 
@@ -340,10 +285,37 @@ class Carousel {
       return;
     }
 
-    this.items[this.currentItemIndex].hide({ args: direction, event });
-    this.items[this.nextItemIndex].show({ args: direction, event });
+    this.items[this.currentItemIndex].hide({ args: direction });
+    this.items[this.nextItemIndex].show({ args: direction });
 
     this.currentItemIndex = this.nextItemIndex;
+  };
+
+  update = () => {
+    this.items = [
+      ...this.element.querySelectorAll<HTMLElement>(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          ATTRIBUTE_BASE_ID
+        )}"][${ATTRIBUTE_ITEM}]`
+      ),
+    ].map((element) => {
+      return new CarouselItem({
+        element,
+      });
+    });
+  };
+
+  destroy = () => {
+    this.items = null;
+
+    document.removeEventListener('click', this.handleDocumentClick);
+
+    this.element.removeEventListener(
+      'touchstart',
+      this.handleElementTouchStart
+    );
+    this.element.removeEventListener('touchmove', this.handleElementTouchMove);
+    this.element.removeEventListener('touchend', this.handleElementTouchEnd);
   };
 }
 

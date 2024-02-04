@@ -1,56 +1,53 @@
-import { ExtractComponentActions } from '../typer';
+const ATTRIBUTE_BASE_ID = 'data-w-accordion-id';
+const ATTRIBUTE_ITEM = 'data-w-accordion-item';
+const ATTRIBUTE_ITEM_ACTIVE = 'data-w-accordion-item-active';
+const ATTRIBUTE_CONTROL = 'data-w-accordion-control';
+const ATTRIBUTE_CONTROL_ACTIVE = 'data-w-accordion-control-active';
+const ATTRIBUTE_ACTION = 'data-w-accordion-action';
+const ATTRIBUTE_ACTION_ARGS = 'data-w-accordion-action-args';
+const ATTRIBUTE_ACTION_FLUSH = 'data-w-accordion-action-flush';
 
-import { animate } from '../animate';
-
-const COMPONENT_BASE = 'accordion';
-
-const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
-const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
-const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
-const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
-const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
-const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
-const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-type AccordionPropsType = {
-  element: HTMLElement;
+type AccordionPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-type AccordionItemPropsType = {
-  element: HTMLElement;
-  accordion: Accordion;
+type AccordionItemPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-class AccordionItem {
-  accordion: Accordion;
+class AccordionItem<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-  element: HTMLElement;
+  animationFrame = 0;
 
-  animation: {
-    promise: Promise<unknown> & {
-      resolve: (value?: unknown | PromiseLike<unknown>) => void;
-    };
-    timer: number;
-  } | null = null;
-
-  constructor({ element, accordion }: AccordionItemPropsType) {
+  constructor({ element }: AccordionItemPropsType<BaseElementType>) {
     this.element = element;
-    this.accordion = accordion;
+
+    this.element.ontransitionend = this.handleTransitionEnd;
   }
 
-  show = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
+  //! НЕ ВЫЗЫВАЕТСЯ ПРИ prefers-reduced-motion: reduce
+  handleTransitionEnd = (event: TransitionEvent) => {
+    if (event.target !== this.element) {
       return;
     }
 
-    this.element.style.height = `0px`;
-    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
+    if (event.propertyName !== 'height') {
+      return;
+    }
+
+    this.element.style.removeProperty('height');
+    this.element.style.removeProperty('display');
+  };
+
+  show = () => {
+    if (this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
+      return;
+    }
+
+    if (this.animationFrame) {
+      window.cancelAnimationFrame(this.animationFrame);
+    }
 
     document
       .querySelectorAll(
@@ -64,76 +61,57 @@ class AccordionItem {
         control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
       });
 
-    // Магичесий хак
-    this.element.scrollHeight;
+    this.element.style.height = this.element.style.height || '0';
 
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.style.height = this.element.scrollHeight + 'px';
-      },
-    });
+    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
 
-    await this.animation?.promise;
-
-    this.element.style.removeProperty('height');
-
-    this.animation = null;
+    this.element.style.height = this.element.scrollHeight + 'px';
   };
 
-  hide = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
+  hide = () => {
+    if (!this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
       return;
     }
 
-    this.element.style.height = this.element.scrollHeight + 'px';
+    if (this.animationFrame) {
+      window.cancelAnimationFrame(this.animationFrame);
+    }
+
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+          `${ATTRIBUTE_ITEM}`
+        )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          `${ATTRIBUTE_BASE_ID}`
+        )}"][${ATTRIBUTE_CONTROL}]`
+      )
+      .forEach((control) => {
+        control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+      });
+
+    this.element.style.height =
+      this.element.style.height || this.element.scrollHeight + 'px';
+
     this.element.style.display = 'block';
 
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.style.height = this.element.scrollHeight + 'px';
-        this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
+    this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
 
-        document
-          .querySelectorAll(
-            `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
-              `${ATTRIBUTE_ITEM}`
-            )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
-              `${ATTRIBUTE_BASE_ID}`
-            )}"][${ATTRIBUTE_CONTROL}]`
-          )
-          .forEach((control) => {
-            control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
-          });
-
-        this.element.style.height = `0px`;
-      },
+    this.animationFrame = window.requestAnimationFrame(() => {
+      this.element.style.height = '0';
+      this.animationFrame = 0;
     });
-
-    await this.animation?.promise;
-
-    this.element.style.removeProperty('display');
-    this.element.style.removeProperty('height');
-
-    this.animation = null;
   };
 }
 
-class Accordion {
-  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<
-    Accordion,
-    ({ args, event }: { args: unknown; event?: Event }) => void
-  >[] = ['show'];
+class Accordion<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-  element: HTMLElement;
+  items: AccordionItem[] | null = [];
 
-  constructor({ element }: AccordionPropsType) {
+  constructor({ element }: AccordionPropsType<BaseElementType>) {
     this.element = element;
+
+    this.update();
 
     document.addEventListener('click', this.handleDocumentClick);
   }
@@ -141,40 +119,31 @@ class Accordion {
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
+    const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
 
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
+    const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
 
     if (!actionFlush) {
       event.preventDefault();
     }
 
-    if (
-      !action ||
-      !Accordion.SUPPORTED_ACTIONS.includes(
-        action as ExtractComponentActions<Accordion>
-      )
-    ) {
+    if (!action) {
       return;
     }
 
@@ -188,55 +157,52 @@ class Accordion {
     }
   };
 
-  show = async ({ args }: { args?: unknown; event?: Event }) => {
+  show = ({ args }: { args: string | number }) => {
     if (!args) {
       return;
     }
 
-    const accordionId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
-
-    if (!accordionId) {
+    if (!this.items || !this.items.length) {
       return;
     }
 
-    const items = this.element.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${accordionId}"][${ATTRIBUTE_ITEM}]`
-    );
+    this.items.forEach((item) => {
+      if (item.element.getAttribute(ATTRIBUTE_ITEM) == args) {
+        item.show();
+      } else {
+        item.hide();
+      }
+    });
+  };
 
-    if (!items) {
-      return;
-    }
+  update = () => {
+    this.items = [
+      ...document.querySelectorAll<HTMLElement>(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          ATTRIBUTE_BASE_ID
+        )}"][${ATTRIBUTE_ITEM}]`
+      ),
+    ].map((element) => {
+      return new AccordionItem({
+        element,
+      });
+    });
+  };
 
-    const item = [...items].find((element) => {
-      return element.getAttribute(ATTRIBUTE_ITEM) === args;
+  destroy = () => {
+    this.items?.forEach((item) => {
+      item.element.ontransitionend = null;
     });
 
-    if (!item) {
-      return;
-    }
+    this.items = null;
 
-    const promises = [];
-
-    for (const _item of items) {
-      const itemInstance = new AccordionItem({
-        element: _item as HTMLElement,
-        accordion: this,
-      });
-
-      if (_item === item) {
-        promises.push(itemInstance.show());
-      } else {
-        promises.push(itemInstance.hide());
-      }
-    }
-
-    await Promise.allSettled(promises);
+    document.removeEventListener('click', this.handleDocumentClick);
   };
 }
 
 export {
   Accordion as accordion,
   AccordionPropsType,
-  AccordionItem as accordionItem,
+  AccordionItem as _accordionItem,
   AccordionItemPropsType,
 };

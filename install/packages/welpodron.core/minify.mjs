@@ -65,6 +65,8 @@ import autoprefixer from 'autoprefixer';
     // ES6 MODULES REPLACE
     //! WARNING ORDER IS IMPORTANT
 
+    content = content.replace(/animationFrame/g, 'anF');
+
     //! FORMS API
     content = content.replace(/responseContainer/g, 'resCont');
     content = content.replace(/captchaLoaded/g, 'capL');
@@ -123,6 +125,7 @@ import autoprefixer from 'autoprefixer';
     content = content.replace(/handleElementTouchMove/g, 'hETM');
     content = content.replace(/handleElementTouchEnd/g, 'hETE');
     content = content.replace(/handleElementTouchStart/g, 'hETS');
+    content = content.replace(/handleTransitionEnd/g, 'hTrE');
     // STATE
     content = content.replace(/isTranslating/g, 'isTr');
     content = content.replace(/isActive/g, 'isAc');
@@ -131,8 +134,8 @@ import autoprefixer from 'autoprefixer';
     content = content.replace(/lastFocusedElement/g, 'lFdE');
     content = content.replace(/lastFocusableElement/g, 'lFeE');
     // CAROUSEL
-    content = content.replace(/items\;/, 'its');
-    content = content.replace(/this.items/g, 'this.its');
+    // content = content.replace(/items\;/, 'its');
+    // content = content.replace(/this.items/g, 'this.its');
     content = content.replace(/touchStartX/g, 'tSX');
     content = content.replace(/touchDeltaX/g, 'tDX');
     content = content.replace(/swipeThreshold/g, 'sTh');

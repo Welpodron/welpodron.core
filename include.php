@@ -35,14 +35,12 @@ CJSCore::RegisterExt('welpodron.core.modal', [
 CJSCore::RegisterExt('welpodron.core.accordion', [
     'js' => '/local/packages/welpodron.core/iife/accordion/index.js',
     'css' => '/local/packages/welpodron.core/css/accordion/style.css',
-    'rel' => ['welpodron.core.animate'],
     'skip_core' => true
 ]);
 
 CJSCore::RegisterExt('welpodron.core.tabs', [
     'js' => '/local/packages/welpodron.core/iife/tabs/index.js',
     'css' => '/local/packages/welpodron.core/css/tabs/style.css',
-    'rel' => ['welpodron.core.animate'],
     'skip_core' => true
 ]);
 
@@ -55,7 +53,6 @@ CJSCore::RegisterExt('welpodron.core.carousel', [
 CJSCore::RegisterExt('welpodron.core.collapse', [
     'js' => '/local/packages/welpodron.core/iife/collapse/index.js',
     'css' => '/local/packages/welpodron.core/css/collapse/style.css',
-    'rel' => ['welpodron.core.animate'],
     'skip_core' => true
 ]);
 

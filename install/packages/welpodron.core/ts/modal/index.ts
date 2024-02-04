@@ -1,40 +1,25 @@
-import { ExtractComponentActions } from '../typer';
+const ATTRIBUTE_BASE_ID = 'data-w-modal-id';
+const ATTRIBUTE_BASE_ACTIVE = 'data-w-modal-active';
+const ATTRIBUTE_BASE_ONCE = 'data-w-modal-once';
+const ATTRIBUTE_CONTENT = 'data-w-modal-content';
+const ATTRIBUTE_CONTROL = 'data-w-modal-control';
+const ATTRIBUTE_ACTION = 'data-w-modal-action';
+const ATTRIBUTE_ACTION_ARGS = 'data-w-modal-action-args';
+const ATTRIBUTE_ACTION_FLUSH = 'data-w-modal-action-flush';
 
-// Its cool to write english comments along with russian comments KEK Its like Im a fucking bipolar or smth idk
 const modalsListActive = new Set<Modal>();
-
-const COMPONENT_BASE = 'modal';
-
-const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
-const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
-const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
-const ATTRIBUTE_BASE_ONCE = `${ATTRIBUTE_BASE}-once`;
-const ATTRIBUTE_CONTENT = `${ATTRIBUTE_BASE}-content`;
-const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
-const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-// FOR MINIFICATION PURPOSES
-const DEFAULT_EVENT_CLICK = 'click';
-const DEFAULT_EVENT_KEYDOWN = 'keydown';
 
 type ModalConfigType = {
   isOnce?: boolean;
 };
 
-type ModalPropsType = {
-  element: HTMLElement;
+type ModalPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
   config?: ModalConfigType;
 };
 
-class Modal {
-  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<Modal>[] = [
-    'hide',
-    'show',
-  ];
-
-  element: HTMLElement;
+class Modal<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
   lastFocusedElement: HTMLElement | null;
   firstFocusableElement: HTMLElement;
@@ -43,16 +28,15 @@ class Modal {
   isActive = false;
   isOnce = false;
 
-  constructor({ element, config = {} }: ModalPropsType) {
+  constructor({ element, config = {} }: ModalPropsType<BaseElementType>) {
     this.element = element;
 
-    if (config.isOnce != null) {
-      this.isOnce = config.isOnce;
-    } else {
-      this.isOnce = this.element.getAttribute(ATTRIBUTE_BASE_ONCE) != null;
-    }
+    this.isOnce =
+      config.isOnce != null
+        ? config.isOnce
+        : this.element.hasAttribute(ATTRIBUTE_BASE_ONCE);
 
-    this.isActive = this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null;
+    this.isActive = this.element.hasAttribute(ATTRIBUTE_BASE_ACTIVE);
 
     this.lastFocusedElement = document.activeElement as HTMLElement | null;
 
@@ -74,13 +58,13 @@ class Modal {
     this.element.append(this.firstFocusableElement);
     this.element.append(this.lastFocusableElement);
 
-    document.addEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
+    document.addEventListener('click', this.handleDocumentClick);
   }
 
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
@@ -88,46 +72,37 @@ class Modal {
       return this.hide();
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
-
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
+    const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
 
     if (!actionFlush) {
       event.preventDefault();
     }
 
-    if (
-      !action ||
-      !Modal.SUPPORTED_ACTIONS.includes(
-        action as ExtractComponentActions<Modal>
-      )
-    ) {
+    if (!action) {
       return;
     }
+
+    const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
 
     const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
-      if (!this.element.contains(target as Node)) {
+      if (!this.element.contains(target)) {
         // Проверить находится ли target вне модального окна
         // Если да, то сделать его последним активным элементом
-        this.lastFocusedElement = target as HTMLElement;
+        this.lastFocusedElement = target;
       }
 
       return actionFunc({
@@ -172,10 +147,7 @@ class Modal {
     document.body.style.touchAction = 'pinch-zoom';
     this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, '');
 
-    document.addEventListener(
-      DEFAULT_EVENT_KEYDOWN,
-      this.handleDocumentKeyDown
-    );
+    document.addEventListener('keydown', this.handleDocumentKeyDown);
 
     this.firstFocusableElement.focus();
 
@@ -189,10 +161,7 @@ class Modal {
       return;
     }
 
-    document.removeEventListener(
-      DEFAULT_EVENT_KEYDOWN,
-      this.handleDocumentKeyDown
-    );
+    document.removeEventListener('keydown', this.handleDocumentKeyDown);
 
     this.element.removeAttribute(ATTRIBUTE_BASE_ACTIVE);
 
@@ -216,14 +185,16 @@ class Modal {
     }
 
     if (this.isOnce) {
-      document.removeEventListener(
-        DEFAULT_EVENT_CLICK,
-        this.handleDocumentClick
-      );
+      document.removeEventListener('click', this.handleDocumentClick);
       this.element.remove();
     }
 
     this.isActive = false;
+  };
+
+  destroy = () => {
+    document.removeEventListener('click', this.handleDocumentClick);
+    document.removeEventListener('keydown', this.handleDocumentKeyDown);
   };
 }
 

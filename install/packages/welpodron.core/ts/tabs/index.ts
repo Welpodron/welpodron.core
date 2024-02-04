@@ -1,54 +1,48 @@
-import { ExtractComponentActions } from '../typer';
-import { animate } from '../animate';
+const ATTRIBUTE_BASE_ID = 'data-w-tabs-id';
+const ATTRIBUTE_ITEM = 'data-w-tabs-item';
+const ATTRIBUTE_ITEM_ACTIVE = 'data-w-tabs-item-active';
+const ATTRIBUTE_CONTROL = 'data-w-tabs-control';
+const ATTRIBUTE_CONTROL_ACTIVE = 'data-w-tabs-control-active';
+const ATTRIBUTE_ACTION = 'data-w-tabs-action';
+const ATTRIBUTE_ACTION_ARGS = 'data-w-tabs-action-args';
+const ATTRIBUTE_ACTION_FLUSH = 'data-w-tabs-action-flush';
 
-const COMPONENT_BASE = 'tabs';
-
-const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
-const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
-const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
-const ATTRIBUTE_ITEM_ACTIVE = `${ATTRIBUTE_ITEM}-active`;
-const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
-const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
-const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-type TabsPropsType = {
-  element: HTMLElement;
+type TabsItemPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-type TabsItemPropsType = {
-  element: HTMLElement;
-  tabs: Tabs;
-};
+class TabsItem<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-class TabsItem {
-  tabs: Tabs;
+  animationFrame = 0;
 
-  element: HTMLElement;
-
-  animation: {
-    promise: Promise<unknown> & {
-      resolve: (value?: unknown | PromiseLike<unknown>) => void;
-    };
-    timer: number;
-  } | null = null;
-
-  constructor({ element, tabs }: TabsItemPropsType) {
+  constructor({ element }: TabsItemPropsType<BaseElementType>) {
     this.element = element;
-    this.tabs = tabs;
+
+    this.element.ontransitionend = this.handleTransitionEnd;
   }
 
-  show = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
+  //! НЕ ВЫЗЫВАЕТСЯ ПРИ prefers-reduced-motion: reduce
+  handleTransitionEnd = (event: TransitionEvent) => {
+    if (event.target !== this.element) {
       return;
     }
 
-    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
+    if (event.propertyName !== 'opacity') {
+      return;
+    }
+
+    this.element.style.removeProperty('opacity');
+  };
+
+  show = () => {
+    if (this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
+      return;
+    }
+
+    if (this.animationFrame) {
+      window.cancelAnimationFrame(this.animationFrame);
+    }
 
     document
       .querySelectorAll(
@@ -62,70 +56,54 @@ class TabsItem {
         control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
       });
 
-    this.element.style.opacity = `0`;
-    // Магичесий хак
-    this.element.scrollHeight;
+    this.element.style.opacity = '0';
 
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.style.opacity = `1`;
-      },
+    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
+
+    this.animationFrame = window.requestAnimationFrame(() => {
+      this.element.style.opacity = '1';
+      this.animationFrame = 0;
     });
-
-    await this.animation?.promise;
-
-    this.element.style.removeProperty('opacity');
-
-    this.animation = null;
   };
 
-  hide = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
+  hide = () => {
+    if (!this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
       return;
     }
 
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
+    if (this.animationFrame) {
+      window.cancelAnimationFrame(this.animationFrame);
+    }
 
-        document
-          .querySelectorAll(
-            `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
-              `${ATTRIBUTE_ITEM}`
-            )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
-              `${ATTRIBUTE_BASE_ID}`
-            )}"][${ATTRIBUTE_CONTROL}]`
-          )
-          .forEach((control) => {
-            control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
-          });
-      },
-    });
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_ACTION_ARGS}="${this.element.getAttribute(
+          `${ATTRIBUTE_ITEM}`
+        )}"][${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          `${ATTRIBUTE_BASE_ID}`
+        )}"][${ATTRIBUTE_CONTROL}]`
+      )
+      .forEach((control) => {
+        control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+      });
 
-    await this.animation?.promise;
-
-    this.animation = null;
+    this.element.removeAttribute(ATTRIBUTE_ITEM_ACTIVE);
   };
 }
 
-class Tabs {
-  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<
-    Tabs,
-    ({ args, event }: { args: unknown; event?: Event }) => void
-  >[] = ['show'];
+type TabsPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
+};
 
-  element: HTMLElement;
+class Tabs<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-  _items: TabsItem[] = [];
+  items: TabsItem[] | null = [];
 
-  constructor({ element }: TabsPropsType) {
+  constructor({ element }: TabsPropsType<BaseElementType>) {
     this.element = element;
+
+    this.update();
 
     document.addEventListener('click', this.handleDocumentClick);
   }
@@ -133,44 +111,37 @@ class Tabs {
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
-
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
-
-    if (!actionFlush) {
-      event.preventDefault();
-    }
-
-    if (
-      !action ||
-      !Tabs.SUPPORTED_ACTIONS.includes(action as ExtractComponentActions<Tabs>)
-    ) {
+    if (!action) {
       return;
     }
+
+    const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
+
+    const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
 
     const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
+      if (!actionFlush) {
+        event.preventDefault();
+      }
+
       return actionFunc({
         args: actionArgs,
         event,
@@ -178,57 +149,46 @@ class Tabs {
     }
   };
 
-  show = async ({ args }: { args?: unknown; event?: Event }) => {
+  show = ({ args }: { args: string | number }) => {
     if (!args) {
       return;
     }
 
-    const tabsId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
-
-    if (!tabsId) {
+    if (!this.items || !this.items.length) {
       return;
     }
 
-    const items = this.element.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${tabsId}"][${ATTRIBUTE_ITEM}]`
-    );
-
-    if (!items) {
-      return;
-    }
-
-    const item = [...items].find((element) => {
-      return element.getAttribute(ATTRIBUTE_ITEM) === args;
-    });
-
-    if (!item) {
-      return;
-    }
-
-    for (const _item of this._items) {
-      if (_item.animation) {
-        clearTimeout(_item.animation.timer);
+    this.items.forEach((item) => {
+      if (item.element.getAttribute(ATTRIBUTE_ITEM) == args) {
+        item.show();
+      } else {
+        item.hide();
       }
-    }
+    });
+  };
 
-    this._items = [...items].map((element) => {
+  update = () => {
+    this.items = [
+      ...document.querySelectorAll<HTMLElement>(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          ATTRIBUTE_BASE_ID
+        )}"][${ATTRIBUTE_ITEM}]`
+      ),
+    ].map((element) => {
       return new TabsItem({
-        element: element as HTMLElement,
-        tabs: this,
+        element,
       });
     });
+  };
 
-    const promises = [];
+  destroy = () => {
+    this.items?.forEach((item) => {
+      item.element.ontransitionend = null;
+    });
 
-    for (const _item of this._items) {
-      if (_item.element === item) {
-        promises.push(_item.show());
-      } else {
-        promises.push(_item.hide());
-      }
-    }
+    this.items = null;
 
-    await Promise.allSettled(promises);
+    document.removeEventListener('click', this.handleDocumentClick);
   };
 }
 

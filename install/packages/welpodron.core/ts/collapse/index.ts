@@ -1,78 +1,70 @@
-import { ExtractComponentActions } from '../typer';
+const ATTRIBUTE_BASE_ID = 'data-w-collapse-id';
+const ATTRIBUTE_BASE_ACTIVE = 'data-w-collapse-active';
+const ATTRIBUTE_CONTROL = 'data-w-collapse-control';
+const ATTRIBUTE_CONTROL_ACTIVE = 'data-w-collapse-control-active';
+const ATTRIBUTE_ACTION = 'data-w-collapse-action';
+const ATTRIBUTE_ACTION_FLUSH = 'data-w-collapse-action-flush';
 
-import { animate } from '../animate';
+// FOR MINIFICATION
+const DEFAULT_CANCEL_ANIMATION_FRAME = window.cancelAnimationFrame;
 
-const COMPONENT_BASE = 'collapse';
-
-const ATTRIBUTE_BASE = `data-w-${COMPONENT_BASE}`;
-const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
-const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
-const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
-const ATTRIBUTE_CONTROL_ACTIVE = `${ATTRIBUTE_CONTROL}-active`;
-const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
-
-type CollapsePropsType = {
-  element: HTMLElement;
+type CollapsePropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-class Collapse {
-  static readonly SUPPORTED_ACTIONS: ExtractComponentActions<Collapse>[] = [
-    'hide',
-    'show',
-    'toggle',
-  ];
+class Collapse<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-  element: HTMLElement;
+  animationFrame = 0;
 
-  animation: {
-    promise: Promise<unknown> & {
-      resolve: (value?: unknown | PromiseLike<unknown>) => void;
-    };
-    timer: number;
-  } | null = null;
-
-  constructor({ element }: CollapsePropsType) {
+  constructor({ element }: CollapsePropsType<BaseElementType>) {
     this.element = element;
+
+    this.element.ontransitionend = this.handleTransitionEnd;
 
     document.addEventListener('click', this.handleDocumentClick);
   }
 
-  handleDocumentClick = (event: MouseEvent) => {
-    let { target } = event;
-
-    if (!target) {
+  //! НЕ ВЫЗЫВАЕТСЯ ПРИ prefers-reduced-motion: reduce
+  handleTransitionEnd = (event: TransitionEvent) => {
+    if (event.target !== this.element) {
       return;
     }
 
-    target = (target as Element).closest(
+    if (event.propertyName !== 'height') {
+      return;
+    }
+
+    this.element.style.removeProperty('height');
+    this.element.style.removeProperty('display');
+  };
+
+  handleDocumentClick = (event: MouseEvent) => {
+    let { target } = event;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
+    const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
 
     if (!actionFlush) {
       event.preventDefault();
     }
 
-    if (
-      !action ||
-      !Collapse.SUPPORTED_ACTIONS.includes(
-        action as ExtractComponentActions<Collapse>
-      )
-    ) {
+    if (!action) {
       return;
     }
 
@@ -83,92 +75,82 @@ class Collapse {
     }
   };
 
-  show = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null) {
+  show = () => {
+    if (this.element.hasAttribute(ATTRIBUTE_BASE_ACTIVE)) {
       return;
     }
 
-    const controls = document.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
-        `${ATTRIBUTE_BASE_ID}`
-      )}"][${ATTRIBUTE_CONTROL}]`
-    );
+    if (this.animationFrame) {
+      DEFAULT_CANCEL_ANIMATION_FRAME(this.animationFrame);
+    }
 
-    controls.forEach((control) => {
-      control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
-    });
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          `${ATTRIBUTE_BASE_ID}`
+        )}"][${ATTRIBUTE_CONTROL}]`
+      )
+      .forEach((control) => {
+        control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
+      });
 
-    this.element.style.height = `0px`;
+    this.element.style.height = this.element.style.height || '0';
+
     this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, '');
-    // Магичесий хак
-    this.element.scrollHeight;
-
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.style.height = this.element.scrollHeight + 'px';
-      },
-    });
-
-    await this.animation?.promise;
-
-    this.element.style.removeProperty('height');
-
-    this.animation = null;
-  };
-
-  hide = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
-    }
-
-    if (this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) == null) {
-      return;
-    }
 
     this.element.style.height = this.element.scrollHeight + 'px';
-    this.element.style.display = 'block';
-
-    this.animation = animate({
-      element: this.element,
-      callback: () => {
-        this.element.style.height = this.element.scrollHeight + 'px';
-        this.element.removeAttribute(ATTRIBUTE_BASE_ACTIVE);
-
-        const controls = document.querySelectorAll(
-          `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
-            `${ATTRIBUTE_BASE_ID}`
-          )}"][${ATTRIBUTE_CONTROL}]`
-        );
-
-        controls.forEach((control) => {
-          control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
-        });
-
-        this.element.style.height = `0px`;
-      },
-    });
-
-    await this.animation?.promise;
-
-    this.element.style.removeProperty('display');
-    this.element.style.removeProperty('height');
-
-    this.animation = null;
   };
 
-  toggle = async () => {
-    if (this.animation) {
-      clearTimeout(this.animation.timer);
+  hide = () => {
+    if (!this.element.hasAttribute(ATTRIBUTE_BASE_ACTIVE)) {
+      return;
     }
 
-    return this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null
+    if (this.animationFrame) {
+      DEFAULT_CANCEL_ANIMATION_FRAME(this.animationFrame);
+    }
+
+    document
+      .querySelectorAll(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          `${ATTRIBUTE_BASE_ID}`
+        )}"][${ATTRIBUTE_CONTROL}]`
+      )
+      .forEach((control) => {
+        control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
+      });
+
+    this.element.style.height =
+      this.element.style.height || this.element.scrollHeight + 'px';
+
+    this.element.style.display = 'block';
+
+    this.element.removeAttribute(ATTRIBUTE_BASE_ACTIVE);
+
+    this.animationFrame = window.requestAnimationFrame(() => {
+      this.element.style.height = '0';
+      this.animationFrame = 0;
+    });
+  };
+
+  toggle = () => {
+    if (this.animationFrame) {
+      DEFAULT_CANCEL_ANIMATION_FRAME(this.animationFrame);
+    }
+
+    return this.element.hasAttribute(ATTRIBUTE_BASE_ACTIVE)
       ? this.hide()
       : this.show();
+  };
+
+  destroy = () => {
+    this.element.ontransitionend = null;
+
+    if (this.animationFrame) {
+      DEFAULT_CANCEL_ANIMATION_FRAME(this.animationFrame);
+    }
+
+    document.removeEventListener('click', this.handleDocumentClick);
   };
 }
 
