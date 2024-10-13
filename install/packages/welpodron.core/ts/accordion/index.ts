@@ -221,6 +221,10 @@ class Accordion {
 
     await Promise.allSettled(promises);
   };
+
+  removeEventsListeners = () => {
+    document.removeEventListener('click', this.handleDocumentClick);
+  };
 }
 
 export {

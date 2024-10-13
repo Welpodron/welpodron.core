@@ -1,7 +1,7 @@
 //! TODO: v3 Добавить поддержку событий
 //! TODO: v3 Добавить поддержку стрелок
 
-const MODULE_BASE = 'carousel';
+const MODULE_BASE = "carousel";
 
 const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
@@ -18,10 +18,10 @@ const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
 // FOR MINIFICATION PURPOSES
-const DEFAULT_EVENT_TOUCHSTART = 'touchstart';
-const DEFAULT_EVENT_TOUCHMOVE = 'touchmove';
-const DEFAULT_EVENT_TOUCHEND = 'touchend';
-const DEFAULT_EVENT_CLICK = 'click';
+const DEFAULT_EVENT_TOUCHSTART = "touchstart";
+const DEFAULT_EVENT_TOUCHMOVE = "touchmove";
+const DEFAULT_EVENT_TOUCHEND = "touchend";
+const DEFAULT_EVENT_CLICK = "click";
 
 type CarouselPropsType = {
   element: HTMLElement;
@@ -36,7 +36,7 @@ type CarouselItemPropsType = {
 // data-carousel-item-id
 // data-carousel-item-active
 class CarouselItem {
-  supportedActions = ['hide', 'show'];
+  supportedActions = ["hide", "show"];
 
   carousel: Carousel;
 
@@ -60,7 +60,7 @@ class CarouselItem {
       return;
     }
 
-    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, '');
+    this.element.setAttribute(ATTRIBUTE_ITEM_ACTIVE, "");
 
     this.clearAttributes();
 
@@ -73,15 +73,15 @@ class CarouselItem {
         )}"][${ATTRIBUTE_CONTROL}]`
       )
       .forEach((control) => {
-        control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, '');
+        control.setAttribute(ATTRIBUTE_CONTROL_ACTIVE, "");
       });
 
-    if (args === 'right') {
-      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT, '');
+    if (args === "right") {
+      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT, "");
       this.element.offsetTop;
       this.element.removeAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_LEFT);
-    } else if (args === 'left') {
-      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT, '');
+    } else if (args === "left") {
+      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT, "");
       this.element.offsetTop;
       this.element.removeAttribute(ATTRIBUTE_ITEM_TRANSLATING_FROM_RIGHT);
     }
@@ -107,16 +107,16 @@ class CarouselItem {
         control.removeAttribute(ATTRIBUTE_CONTROL_ACTIVE);
       });
 
-    if (args === 'right') {
-      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_RIGHT, '');
-    } else if (args === 'left') {
-      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT, '');
+    if (args === "right") {
+      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_RIGHT, "");
+    } else if (args === "left") {
+      this.element.setAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT, "");
     }
   };
 }
 
 class Carousel {
-  supportedActions = ['show'];
+  supportedActions = ["show"];
 
   element: HTMLElement;
 
@@ -225,7 +225,7 @@ class Carousel {
       // if absDeltaX / this.touchDeltaX < 0 slide to left
       // if absDeltaX / this.touchDeltaY > 0 slide to right
       this.show({
-        args: absDeltaX / this.touchDeltaX < 0 ? 'next' : 'prev',
+        args: absDeltaX / this.touchDeltaX < 0 ? "next" : "prev",
         event,
       });
     }
@@ -252,12 +252,12 @@ class Carousel {
       return;
     }
 
-    if (index === 'next') {
+    if (index === "next") {
       this.nextItemIndex = (this.currentItemIndex + 1) % this.items.length;
       return;
     }
 
-    if (index === 'prev') {
+    if (index === "prev") {
       this.nextItemIndex =
         (this.currentItemIndex + this.items.length - 1) % this.items.length;
       return;
@@ -284,17 +284,17 @@ class Carousel {
       this.nextItemIndex === lastIndex &&
       this.currentItemIndex === firstIndex
     ) {
-      return 'right';
+      return "right";
     }
 
     if (
       this.nextItemIndex === firstIndex &&
       this.currentItemIndex === lastIndex
     ) {
-      return 'left';
+      return "left";
     }
 
-    return this.nextItemIndex > this.currentItemIndex ? 'left' : 'right';
+    return this.nextItemIndex > this.currentItemIndex ? "left" : "right";
   };
 
   show = ({ args, event }: { args: unknown; event?: Event }) => {
@@ -339,6 +339,22 @@ class Carousel {
     this.items[this.nextItemIndex].show({ args: direction, event });
 
     this.currentItemIndex = this.nextItemIndex;
+  };
+
+  removeEventsListeners = () => {
+    document.removeEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
+    this.element.removeEventListener(
+      DEFAULT_EVENT_TOUCHSTART,
+      this.handleElementTouchStart
+    );
+    this.element.removeEventListener(
+      DEFAULT_EVENT_TOUCHEND,
+      this.handleElementTouchEnd
+    );
+    this.element.removeEventListener(
+      DEFAULT_EVENT_TOUCHMOVE,
+      this.handleElementTouchMove
+    );
   };
 }
 

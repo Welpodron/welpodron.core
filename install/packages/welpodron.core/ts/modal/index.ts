@@ -1,7 +1,7 @@
 // Its cool to write english comments along with russian comments KEK Its like Im a fucking bipolar or smth idk
 const modalsListActive = new Set<Modal>();
 
-const MODULE_BASE = 'modal';
+const MODULE_BASE = "modal";
 
 const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
@@ -14,8 +14,8 @@ const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
 // FOR MINIFICATION PURPOSES
-const DEFAULT_EVENT_CLICK = 'click';
-const DEFAULT_EVENT_KEYDOWN = 'keydown';
+const DEFAULT_EVENT_CLICK = "click";
+const DEFAULT_EVENT_KEYDOWN = "keydown";
 
 type ModalConfigType = {
   isOnce?: boolean;
@@ -27,7 +27,7 @@ type ModalPropsType = {
 };
 
 class Modal {
-  supportedActions = ['hide', 'show'];
+  supportedActions = ["hide", "show"];
 
   element: HTMLElement;
 
@@ -51,15 +51,15 @@ class Modal {
 
     this.lastFocusedElement = document.activeElement as HTMLElement | null;
 
-    this.firstFocusableElement = document.createElement('div');
-    this.firstFocusableElement.setAttribute(ATTRIBUTE_CONTENT, '');
+    this.firstFocusableElement = document.createElement("div");
+    this.firstFocusableElement.setAttribute(ATTRIBUTE_CONTENT, "");
 
     this.firstFocusableElement.tabIndex = 0;
 
-    this.lastFocusableElement = document.createElement('button');
+    this.lastFocusableElement = document.createElement("button");
 
     this.lastFocusableElement.style.cssText =
-      'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;';
+      "position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;";
 
     this.lastFocusableElement.onfocus = () =>
       this.firstFocusableElement.focus();
@@ -128,7 +128,7 @@ class Modal {
   };
 
   handleDocumentKeyDown = (event: KeyboardEvent) => {
-    if (event.code === 'Tab') {
+    if (event.code === "Tab") {
       if (event.shiftKey) {
         if (event.target === this.firstFocusableElement) {
           event.preventDefault();
@@ -137,7 +137,7 @@ class Modal {
         return;
       }
     }
-    if (event.key === 'Escape' && modalsListActive.size) {
+    if (event.key === "Escape" && modalsListActive.size) {
       const lastModal = [...modalsListActive][modalsListActive.size - 1];
       lastModal.hide();
     }
@@ -158,9 +158,9 @@ class Modal {
       }
     }
 
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'pinch-zoom';
-    this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, '');
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "pinch-zoom";
+    this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, "");
 
     document.addEventListener(
       DEFAULT_EVENT_KEYDOWN,
@@ -191,8 +191,8 @@ class Modal {
     modalsListActive.delete(this);
 
     if (!modalsListActive.size) {
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('touch-action');
+      document.body.style.removeProperty("overflow");
+      document.body.style.removeProperty("touch-action");
     }
 
     if (document.activeElement !== this.lastFocusedElement) {
@@ -214,6 +214,15 @@ class Modal {
     }
 
     this.isActive = false;
+  };
+
+  removeEventsListeners = () => {
+    document.removeEventListener(
+      DEFAULT_EVENT_KEYDOWN,
+      this.handleDocumentKeyDown
+    );
+
+    document.removeEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
   };
 }
 

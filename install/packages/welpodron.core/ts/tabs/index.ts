@@ -225,6 +225,10 @@ class Tabs {
 
     await Promise.allSettled(promises);
   };
+
+  removeEventsListeners = () => {
+    document.removeEventListener('click', this.handleDocumentClick);
+  };
 }
 
 export { Tabs as tabs, TabsPropsType, TabsItem as tabsItem, TabsItemPropsType };

@@ -306,6 +306,14 @@ class Popover {
       }
     }, 125);
   };
+
+  removeEventsListeners = () => {
+    document.removeEventListener('keydown', this.handleDocumentKeyDown);
+    window.removeEventListener('resize', this.handleWindowResize);
+    document.removeEventListener('mouseover', this.handleDocumentMouseOver);
+    document.removeEventListener('mouseout', this.handleDocumentMouseOut);
+    document.removeEventListener('click', this.handleDocumentClick);
+  };
 }
 
 export { Popover as popover, PopoverConfigType, PopoverPropsType };

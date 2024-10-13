@@ -159,6 +159,10 @@ class Collapse {
       ? this.hide()
       : this.show();
   };
+
+  removeEventsListeners = () => {
+    document.removeEventListener('click', this.handleDocumentClick);
+  };
 }
 
 export { Collapse as collapse, CollapsePropsType };
