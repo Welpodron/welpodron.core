@@ -1,8 +1,5 @@
-//! TODO: v3 Добавить поддержку событий
-//! TODO: v3 Добавить поддержку стрелок
-
+//! TODO: v4 Добавить поддержку стрелок
 const MODULE_BASE = "carousel";
-
 const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_ITEM = `${ATTRIBUTE_BASE}-item`;
@@ -23,28 +20,15 @@ const DEFAULT_EVENT_TOUCHMOVE = "touchmove";
 const DEFAULT_EVENT_TOUCHEND = "touchend";
 const DEFAULT_EVENT_CLICK = "click";
 
-type CarouselPropsType = {
-  element: HTMLElement;
+type CarouselItemPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
 };
 
-type CarouselItemPropsType = {
-  element: HTMLElement;
-  carousel: Carousel;
-};
+class CarouselItem<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
-// data-carousel-id
-// data-carousel-item-id
-// data-carousel-item-active
-class CarouselItem {
-  supportedActions = ["hide", "show"];
-
-  carousel: Carousel;
-
-  element: HTMLElement;
-
-  constructor({ element, carousel }: CarouselItemPropsType) {
+  constructor({ element }: CarouselItemPropsType<BaseElementType>) {
     this.element = element;
-    this.carousel = carousel;
   }
 
   clearAttributes = () => {
@@ -54,9 +38,9 @@ class CarouselItem {
     this.element.removeAttribute(ATTRIBUTE_ITEM_TRANSLATING_TO_LEFT);
   };
 
-  show = ({ args }: { args?: unknown; event?: Event }) => {
+  show = ({ args }: { args: "left" | "right" }) => {
     // args is direction
-    if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null) {
+    if (this.element.hasAttribute(ATTRIBUTE_ITEM_ACTIVE)) {
       return;
     }
 
@@ -87,7 +71,7 @@ class CarouselItem {
     }
   };
 
-  hide = ({ args }: { args?: unknown; event?: Event }) => {
+  hide = ({ args }: { args: "left" | "right" }) => {
     if (this.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) == null) {
       return;
     }
@@ -115,10 +99,12 @@ class CarouselItem {
   };
 }
 
-class Carousel {
-  supportedActions = ["show"];
+type CarouselPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
+};
 
-  element: HTMLElement;
+class Carousel<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
   touchStartX = 0;
   touchDeltaX = 0;
@@ -129,8 +115,10 @@ class Carousel {
   currentItemIndex = -1;
   nextItemIndex = -1;
 
-  constructor({ element }: CarouselPropsType) {
+  constructor({ element }: CarouselPropsType<BaseElementType>) {
     this.element = element;
+
+    this.update();
 
     document.addEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
 
@@ -146,41 +134,41 @@ class Carousel {
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
-
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
-
-    if (!actionFlush) {
-      event.preventDefault();
-    }
-
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (!action) {
       return;
     }
 
     const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
+      const actionArgs = target.getAttribute(ATTRIBUTE_ACTION_ARGS);
+
+      if (!actionArgs) {
+        return;
+      }
+
+      const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
+
+      if (!actionFlush) {
+        event.preventDefault();
+      }
+
       return actionFunc({
         args: actionArgs,
         event,
@@ -226,7 +214,6 @@ class Carousel {
       // if absDeltaX / this.touchDeltaY > 0 slide to right
       this.show({
         args: absDeltaX / this.touchDeltaX < 0 ? "next" : "prev",
-        event,
       });
     }
 
@@ -238,10 +225,6 @@ class Carousel {
     // prev to right
     // get next and prev are cycled
     // before and after is not
-    if (!this.items) {
-      return;
-    }
-
     if (this.currentItemIndex === -1) {
       this.currentItemIndex = this.items.findIndex((item) => {
         return item.element.getAttribute(ATTRIBUTE_ITEM_ACTIVE) != null;
@@ -297,31 +280,10 @@ class Carousel {
     return this.nextItemIndex > this.currentItemIndex ? "left" : "right";
   };
 
-  show = ({ args, event }: { args: unknown; event?: Event }) => {
-    if (!args) {
+  show = ({ args }: { args: string | number }) => {
+    if (args == null) {
       return;
     }
-
-    const carouselId = this.element.getAttribute(ATTRIBUTE_BASE_ID);
-
-    if (!carouselId) {
-      return;
-    }
-
-    const items = this.element.querySelectorAll(
-      `[${ATTRIBUTE_BASE_ID}="${carouselId}"][${ATTRIBUTE_ITEM}]`
-    );
-
-    if (!items) {
-      return;
-    }
-
-    this.items = [...items].map((element) => {
-      return new CarouselItem({
-        element: element as HTMLElement,
-        carousel: this,
-      });
-    });
 
     this.getNextItem({ index: args as string });
 
@@ -335,10 +297,24 @@ class Carousel {
       return;
     }
 
-    this.items[this.currentItemIndex].hide({ args: direction, event });
-    this.items[this.nextItemIndex].show({ args: direction, event });
+    this.items[this.currentItemIndex].hide({ args: direction });
+    this.items[this.nextItemIndex].show({ args: direction });
 
     this.currentItemIndex = this.nextItemIndex;
+  };
+
+  update = () => {
+    this.items = [
+      ...this.element.querySelectorAll<HTMLElement>(
+        `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
+          ATTRIBUTE_BASE_ID
+        )}"][${ATTRIBUTE_ITEM}]`
+      ),
+    ].map((element) => {
+      return new CarouselItem({
+        element,
+      });
+    });
   };
 
   removeEventsListeners = () => {

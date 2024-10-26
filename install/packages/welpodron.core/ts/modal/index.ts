@@ -1,8 +1,5 @@
-// Its cool to write english comments along with russian comments KEK Its like Im a fucking bipolar or smth idk
-const modalsListActive = new Set<Modal>();
-
+//! v4 Добавить поддержку событий
 const MODULE_BASE = "modal";
-
 const ATTRIBUTE_BASE = `data-w-${MODULE_BASE}`;
 const ATTRIBUTE_BASE_ID = `${ATTRIBUTE_BASE}-id`;
 const ATTRIBUTE_BASE_ACTIVE = `${ATTRIBUTE_BASE}-active`;
@@ -10,7 +7,6 @@ const ATTRIBUTE_BASE_ONCE = `${ATTRIBUTE_BASE}-once`;
 const ATTRIBUTE_CONTENT = `${ATTRIBUTE_BASE}-content`;
 const ATTRIBUTE_CONTROL = `${ATTRIBUTE_BASE}-control`;
 const ATTRIBUTE_ACTION = `${ATTRIBUTE_BASE}-action`;
-const ATTRIBUTE_ACTION_ARGS = `${ATTRIBUTE_ACTION}-args`;
 const ATTRIBUTE_ACTION_FLUSH = `${ATTRIBUTE_ACTION}-flush`;
 
 // FOR MINIFICATION PURPOSES
@@ -21,15 +17,13 @@ type ModalConfigType = {
   isOnce?: boolean;
 };
 
-type ModalPropsType = {
-  element: HTMLElement;
+type ModalPropsType<BaseElementType extends HTMLElement> = {
+  element: BaseElementType;
   config?: ModalConfigType;
 };
 
-class Modal {
-  supportedActions = ["hide", "show"];
-
-  element: HTMLElement;
+class Modal<BaseElementType extends HTMLElement = HTMLElement> {
+  element: BaseElementType;
 
   lastFocusedElement: HTMLElement | null;
   firstFocusableElement: HTMLElement;
@@ -38,16 +32,15 @@ class Modal {
   isActive = false;
   isOnce = false;
 
-  constructor({ element, config = {} }: ModalPropsType) {
+  constructor({ element, config = {} }: ModalPropsType<BaseElementType>) {
     this.element = element;
 
-    if (config.isOnce != null) {
-      this.isOnce = config.isOnce;
-    } else {
-      this.isOnce = this.element.getAttribute(ATTRIBUTE_BASE_ONCE) != null;
-    }
+    this.isOnce =
+      config.isOnce != null
+        ? config.isOnce
+        : this.element.hasAttribute(ATTRIBUTE_BASE_ONCE);
 
-    this.isActive = this.element.getAttribute(ATTRIBUTE_BASE_ACTIVE) != null;
+    this.isActive = this.element.hasAttribute(ATTRIBUTE_BASE_ACTIVE);
 
     this.lastFocusedElement = document.activeElement as HTMLElement | null;
 
@@ -75,7 +68,7 @@ class Modal {
   handleDocumentClick = (event: MouseEvent) => {
     let { target } = event;
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
@@ -83,51 +76,42 @@ class Modal {
       return this.hide();
     }
 
-    target = (target as Element).closest(
+    target = target.closest(
       `[${ATTRIBUTE_BASE_ID}="${this.element.getAttribute(
         `${ATTRIBUTE_BASE_ID}`
       )}"][${ATTRIBUTE_CONTROL}][${ATTRIBUTE_ACTION}]`
     );
 
-    if (!target) {
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const action = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION
-    ) as keyof this;
+    const action = target.getAttribute(ATTRIBUTE_ACTION) as keyof this;
 
-    const actionArgs = (target as Element).getAttribute(ATTRIBUTE_ACTION_ARGS);
-
-    const actionFlush = (target as Element).getAttribute(
-      ATTRIBUTE_ACTION_FLUSH
-    );
-
-    if (!actionFlush) {
-      event.preventDefault();
-    }
-
-    if (!action || !this.supportedActions.includes(action as string)) {
+    if (!action) {
       return;
     }
 
     const actionFunc = this[action];
 
     if (actionFunc instanceof Function) {
-      if (!this.element.contains(target as Node)) {
-        // Проверить находится ли target вне модального окна
-        // Если да, то сделать его последним активным элементом
-        this.lastFocusedElement = target as HTMLElement;
+      const actionFlush = target.getAttribute(ATTRIBUTE_ACTION_FLUSH);
+
+      if (!actionFlush) {
+        event.preventDefault();
+      }
+
+      if (!this.element.contains(target)) {
+        this.lastFocusedElement = target;
       }
 
       return actionFunc({
-        args: actionArgs,
         event,
       });
     }
   };
 
-  handleDocumentKeyDown = (event: KeyboardEvent) => {
+  handleElementKeyDown = (event: KeyboardEvent) => {
     if (event.code === "Tab") {
       if (event.shiftKey) {
         if (event.target === this.firstFocusableElement) {
@@ -137,9 +121,8 @@ class Modal {
         return;
       }
     }
-    if (event.key === "Escape" && modalsListActive.size) {
-      const lastModal = [...modalsListActive][modalsListActive.size - 1];
-      lastModal.hide();
+    if (event.key === "Escape") {
+      this.hide();
     }
   };
 
@@ -162,14 +145,12 @@ class Modal {
     document.body.style.touchAction = "pinch-zoom";
     this.element.setAttribute(ATTRIBUTE_BASE_ACTIVE, "");
 
-    document.addEventListener(
+    this.element.addEventListener(
       DEFAULT_EVENT_KEYDOWN,
-      this.handleDocumentKeyDown
+      this.handleElementKeyDown
     );
 
     this.firstFocusableElement.focus();
-
-    modalsListActive.add(this);
 
     this.isActive = true;
   };
@@ -179,30 +160,18 @@ class Modal {
       return;
     }
 
-    document.removeEventListener(
+    this.element.removeEventListener(
       DEFAULT_EVENT_KEYDOWN,
-      this.handleDocumentKeyDown
+      this.handleElementKeyDown
     );
 
     this.element.removeAttribute(ATTRIBUTE_BASE_ACTIVE);
 
     this.lastFocusedElement?.focus();
 
-    modalsListActive.delete(this);
-
-    if (!modalsListActive.size) {
+    if (!document.querySelector(`[${ATTRIBUTE_BASE_ACTIVE}]`)) {
       document.body.style.removeProperty("overflow");
       document.body.style.removeProperty("touch-action");
-    }
-
-    if (document.activeElement !== this.lastFocusedElement) {
-      // Допустим кнопка стала не активной у другого модального окна
-      if (modalsListActive.size) {
-        const lastModal = [...modalsListActive].pop();
-        if (lastModal) {
-          lastModal.firstFocusableElement.focus();
-        }
-      }
     }
 
     if (this.isOnce) {
@@ -217,13 +186,12 @@ class Modal {
   };
 
   removeEventsListeners = () => {
-    document.removeEventListener(
+    this.element.removeEventListener(
       DEFAULT_EVENT_KEYDOWN,
-      this.handleDocumentKeyDown
+      this.handleElementKeyDown
     );
-
     document.removeEventListener(DEFAULT_EVENT_CLICK, this.handleDocumentClick);
   };
 }
 
-export { Modal as modal, ModalConfigType, ModalPropsType, modalsListActive };
+export { Modal as modal, ModalConfigType, ModalPropsType };

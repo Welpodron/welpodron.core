@@ -11,3 +11,5 @@ iife/
 jest.config.js
 jest.setup.ts
 .eslintrc.js
+__showcase__
+_*

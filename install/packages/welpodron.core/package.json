@@ -1,6 +1,6 @@
 {
   "name": "welpodron.core",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Js и css библиотека Bitrix модуля welpodron.core",
   "repository": {
     "type": "git",
@@ -46,10 +46,6 @@
     "./modal": {
       "import": "./esm/modal/index.js",
       "types": "./types/modal/index.d.ts"
-    },
-    "./popover": {
-      "import": "./esm/popover/index.js",
-      "types": "./types/popover/index.d.ts"
     },
     "./tabs": {
       "import": "./esm/tabs/index.js",
