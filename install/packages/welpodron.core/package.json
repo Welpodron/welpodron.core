@@ -1,6 +1,6 @@
 {
   "name": "welpodron.core",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "description": "Js и css библиотека Bitrix модуля welpodron.core",
   "repository": {
     "type": "git",
@@ -17,18 +17,53 @@
   "keywords": [
     "bitrix"
   ],
-  "main": "./cjs/index.js",
-  "module": "./es/index.js",
-  "types": "./types/index.d.ts",
   "author": {
     "name": "Danill Salip",
     "email": "welpodron@gmail.com",
     "url": "https://github.com/Welpodron"
   },
   "exports": {
-    "types": "./types/index.d.ts",
-    "import": "./es/index.js",
-    "default": "./cjs/index.js"
+    "./accordion": {
+      "import": "./esm/accordion/index.js",
+      "types": "./types/accordion/index.d.ts"
+    },
+    "./animate": {
+      "import": "./esm/animate/index.js",
+      "types": "./types/animate/index.d.ts"
+    },
+    "./aos": {
+      "import": "./esm/aos/index.js",
+      "types": "./types/aos/index.d.ts"
+    },
+    "./carousel": {
+      "import": "./esm/carousel/index.js",
+      "types": "./types/carousel/index.d.ts"
+    },
+    "./collapse": {
+      "import": "./esm/collapse/index.js",
+      "types": "./types/collapse/index.d.ts"
+    },
+    "./modal": {
+      "import": "./esm/modal/index.js",
+      "types": "./types/modal/index.d.ts"
+    },
+    "./popover": {
+      "import": "./esm/popover/index.js",
+      "types": "./types/popover/index.d.ts"
+    },
+    "./tabs": {
+      "import": "./esm/tabs/index.js",
+      "types": "./types/tabs/index.d.ts"
+    },
+    "./templater": {
+      "import": "./esm/templater/index.js",
+      "types": "./types/templater/index.d.ts"
+    },
+    "./utils": {
+      "import": "./esm/utils/index.js",
+      "types": "./types/utils/index.d.ts"
+    },
+    "./css/*": "./css/*"
   },
   "license": "MIT",
   "bugs": {
@@ -36,21 +71,20 @@
   },
   "homepage": "https://github.com/Welpodron/welpodron.core#readme",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-typescript": "^12.1.1",
     "@testing-library/jest-dom": "^6.2.0",
     "@types/jest": "^29.5.11",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
     "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
+    "glob": "^11.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.33",
     "postcss-csso": "^6.0.1",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.0.1",
     "rollup": "^4.6.1",
-    "rollup-plugin-esbuild": "^6.1.0",
     "ts-jest": "^29.1.1",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",

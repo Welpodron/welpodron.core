@@ -1,21 +1,16 @@
-import path from 'path';
-import fs from 'fs/promises';
-
-import { rollup } from 'rollup';
-import esbuild from 'rollup-plugin-esbuild';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import path from "path";
+import fs from "fs/promises";
+import { globSync } from "glob";
+import { fileURLToPath } from "node:url";
+import { rollup } from "rollup";
+import typescript from "@rollup/plugin-typescript";
 
 (async () => {
   /** @type {import('rollup').RollupBuild | undefined} */
   let bundle;
 
   try {
-    await fs.rm(`./es`, {
-      recursive: true,
-      force: true,
-    });
-
-    await fs.rm(`./cjs`, {
+    await fs.rm(`./esm`, {
       recursive: true,
       force: true,
     });
@@ -24,17 +19,28 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
       recursive: true,
       force: true,
     });
-  } catch (_) {}
+  } catch (_) {
+    //
+  }
+
+  const filesMap = Object.fromEntries(
+    globSync("ts/**/*.ts").map((file) => [
+      path.relative(
+        "ts",
+        file.slice(0, file.length - path.extname(file).length)
+      ),
+      fileURLToPath(new URL(file, import.meta.url)),
+    ])
+  );
 
   /** @type {import('rollup').RollupOptions} */
   let inputOptions = {
-    input: `./ts/index.ts`,
+    input: filesMap,
     plugins: [
-      nodeResolve({ extensions: ['.ts'] }),
-      esbuild({
-        sourceMap: true,
-        target: 'esnext',
-        exclude: ['./types', './es', './cjs', './iife'],
+      typescript({
+        declaration: false,
+        declarationDir: undefined,
+        removeComments: true,
       }),
     ],
   };
@@ -42,18 +48,8 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
   /** @type {import('rollup').OutputOptions[]} */
   const outputs = [
     {
-      format: 'es',
-      entryFileNames: '[name].js',
-      dir: `./es`,
-      preserveModules: true,
-      sourcemap: true,
-    },
-    {
-      format: 'cjs',
-      entryFileNames: '[name].js',
-      dir: `./cjs`,
-      preserveModules: true,
-      sourcemap: true,
+      format: "esm",
+      dir: "esm",
     },
   ];
 
@@ -69,74 +65,34 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
   }
 
   // IIFE BUILD
-
-  /** @type {Set<string>} */
-  let files = new Set();
-  /**
-   *
-   * @param {string} dirPath
-   * @param {string} ext
-   * @returns Promise<void>
-   */
-  const walk = async (dirPath, ext) =>
-    Promise.all(
-      await fs.readdir(dirPath, { withFileTypes: true }).then((entries) =>
-        entries.map((entry) => {
-          const childPath = path.join(dirPath, entry.name);
-
-          if (entry.isDirectory()) {
-            return walk(childPath, ext);
-          }
-
-          if (
-            entry.isFile() &&
-            entry.name.endsWith(ext) &&
-            !entry.name.endsWith('.min' + ext)
-          ) {
-            const fileName = path.basename(childPath, ext);
-
-            const parts = fileName.split('.');
-
-            const last = parts.pop();
-
-            if (last !== 'min') {
-              files.add(childPath);
-            }
-          }
-        })
-      )
-    );
-
-  await walk(`./ts`, 'index.ts');
+  const files = Object.values(filesMap);
 
   for (let file of files) {
     const inputOptions = {
       input: file,
       plugins: [
-        nodeResolve({ extensions: ['.ts'] }),
-        esbuild({
-          sourceMap: true,
-          target: 'esnext',
-          exclude: ['./types', './es', './cjs', './iife'],
+        typescript({
+          declaration: false,
+          declarationDir: undefined,
+          removeComments: true,
         }),
       ],
-      external: ['../utils', '../animate'],
+      external: ["../utils", "../animate"],
     };
     try {
       bundle = await rollup(inputOptions);
       await bundle.write({
-        format: 'iife',
-        name: 'window.welpodron',
+        format: "iife",
+        name: "window.welpodron",
         extend: true,
         file: path.format({
-          ...path.parse(file.replace(/ts/, 'iife')),
-          base: '',
-          ext: 'js',
+          ...path.parse(file.replace(/ts/, "iife")),
+          base: "",
+          ext: "js",
         }),
-        sourcemap: true,
         globals: {
-          [path.resolve('./ts/utils/')]: 'window.welpodron',
-          [path.resolve('./ts/animate/')]: 'window.welpodron',
+          [path.resolve("./ts/utils/")]: "window.welpodron",
+          [path.resolve("./ts/animate/")]: "window.welpodron",
         },
       });
     } catch (error) {
